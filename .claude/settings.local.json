@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/ismismlxu/Desktop/electric_contest/**)",
+      "Bash(ls -la \"C:/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE\" 2>&1)",
+      "Read(//c/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE/**)"
+    ]
+  }
+}
