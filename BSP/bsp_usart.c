@@ -22,9 +22,10 @@ static uint8_t idx = 0;
  * 
  * @param tx_package 
  */     
-void Uart_Send_By_Blocking(Uart_Tx_Package_t *tx_package)
+uint8_t Uart_Tx_By_Blocking(Uart_Tx_Package_t tx_package)
 {
-    HAL_UART_Transmit(tx_package->uart_handle, tx_package->tx_buffer, tx_package->tx_buffer_size, HAL_MAX_DELAY);
+    HAL_UART_Transmit(tx_package.uart_handle, tx_package.tx_buffer, tx_package.tx_buffer_size, HAL_MAX_DELAY);
+    return 1;
 }
 
 /**

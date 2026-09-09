@@ -21,8 +21,10 @@ static uint8_t my_rx_buffer[RX_BUFFER_SIZE];
 static uint8_t MyEcho(void *uart_device, uint16_t rx_buf_num)
 {
   Uart_Instance_t *inst = (Uart_Instance_t*)uart_device;
-  Uart_Tx_Package_t tx_package = {inst->uart_package.uart_handle, inst->uart_package.rx_buffer, rx_buf_num};
-  Uart_Send_By_Blocking(&tx_package);
+  Uart_Tx_Package_t tx_package = {inst->uart_package.uart_handle,
+                                    inst->uart_package.rx_buffer,
+                               (uint8_t)rx_buf_num};
+  Uart_Tx_By_Blocking(tx_package);
 
   return 1;
 }

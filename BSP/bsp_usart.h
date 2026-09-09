@@ -72,7 +72,7 @@ typedef struct
 
 
 
-void Uart_Send_By_Blocking(Uart_Tx_Package_t *tx_package);
+uint8_t Uart_Tx_By_Blocking(Uart_Tx_Package_t tx_package);
 void Uart_Receive_By_Blocking(uart_package_t *uart_config);
 Uart_Instance_t* Uart_Register(uart_package_t *uart_config);
 
