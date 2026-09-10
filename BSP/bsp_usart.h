@@ -66,13 +66,17 @@ typedef struct
 {
     UART_HandleTypeDef *uart_handle;        /*串口句柄*/
     uint8_t *tx_buffer;                     /*要发送的缓存*/
-    uint16_t tx_buffer_size;                /*发送缓存的大小*/
+    uint8_t tx_buffer_size;                /*发送缓存的大小*/
 }Uart_Tx_Package_t;
 
 
 
 
 uint8_t Uart_Tx_By_Blocking(Uart_Tx_Package_t tx_package);
+uint8_t Uart_Tx_By_It(Uart_Tx_Package_t tx_package);
+uint8_t Uart_Tx_By_DMA(Uart_Tx_Package_t tx_package);
+
+
 void Uart_Receive_By_Blocking(uart_package_t *uart_config);
 Uart_Instance_t* Uart_Register(uart_package_t *uart_config);
 

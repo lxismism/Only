@@ -12,6 +12,7 @@
 
 #include "bsp_usart.h"
 #include "FreeRTOS.h"
+#include <stdint.h>
 #include <string.h>
 
 static Uart_Instance_t *Uart_Device[DEVICE_UART_CNT] = {NULL};
@@ -24,12 +25,36 @@ static uint8_t idx = 0;
  */     
 uint8_t Uart_Tx_By_Blocking(Uart_Tx_Package_t tx_package)
 {
-    HAL_UART_Transmit(tx_package.uart_handle, tx_package.tx_buffer, tx_package.tx_buffer_size, HAL_MAX_DELAY);
+    HAL_UART_Transmit(tx_package.uart_handle, tx_package.tx_buffer, tx_package.tx_buffer_size, 20);
     return 1;
 }
 
 /**
- * @brief 阻塞式接收函数，收完len个字节之后才会把数据存进buffer，调用此函数后，收完前cpu会一直在这行代码这里阻塞
+ * @brief 中断发送
+ * 
+ * @param tx_package 
+ * @return uint8_t 
+ */
+uint8_t Uart_Tx_By_It(Uart_Tx_Package_t tx_package)
+{
+    HAL_UART_Transmit_IT(tx_package.uart_handle, tx_package.tx_buffer, tx_package.tx_buffer_size);
+    return 1;
+}
+
+/**
+ * @brief DMA发送
+ * 
+ * @param tx_package 
+ * @return uint8_t 
+ */
+uint8_t Uart_Tx_By_DMA(Uart_Tx_Package_t tx_package)
+{
+    HAL_UART_Transmit_DMA(tx_package.uart_handle, tx_package.tx_buffer, tx_package.tx_buffer_size);
+    return 1;
+}
+
+/**
+ * @brief 阻塞式发送
  * 
  * @param uart_config 
  */
@@ -38,6 +63,12 @@ void Uart_Receive_By_Blocking(uart_package_t *uart_config)
     HAL_UART_Receive(uart_config->uart_handle, uart_config->rx_buffer, uart_config->rx_buffer_size, HAL_MAX_DELAY);
 }
 
+/**
+ * @brief 串口注册
+ * 
+ * @param uart_config 
+ * @return Uart_Instance_t* 
+ */
 Uart_Instance_t* Uart_Register(uart_package_t *uart_config)
 {
     if(uart_config == NULL)
@@ -73,7 +104,12 @@ Uart_Instance_t* Uart_Register(uart_package_t *uart_config)
 
 }
 
-
+/**
+ * @brief uart事件中断回调
+ * 
+ * @param huart 
+ * @param Size 
+ */
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)   /*此处的Size是在进到这个回调函数时，rx_buffer收到的字节数*/
 {
     /*进这个函数的方式不一定是装满，10ms后没消息也会进这个回调函数*/              
@@ -87,7 +123,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)   /*�
             }
             HAL_UARTEx_ReceiveToIdle_IT(Uart_Device[i]->uart_package.uart_handle,
                                         Uart_Device[i]->uart_package.rx_buffer,    
-                                        Uart_Device[i]->uart_package.rx_buffer_size);   /*收满之后会跳进这个回调函数，而且收满一次之后中断接收就不再工作了，所以要在这里重新开启*/
+                                         Uart_Device[i]->uart_package.rx_buffer_size);   /*收满之后会跳进这个回调函数，而且收满一次之后中断接收就不再工作了，所以要在这里重新开启*/
             break;                            
         }
     }
