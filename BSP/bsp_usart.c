@@ -12,11 +12,14 @@
 
 #include "bsp_usart.h"
 #include "FreeRTOS.h"
+#include "stm32h7xx_hal_uart.h"
 #include <stdint.h>
 #include <string.h>
 
 static Uart_Instance_t *Uart_Device[DEVICE_UART_CNT] = {NULL};
 static uint8_t idx = 0;
+
+static uint8_t Uart_Rx_Idle_Callback(Uart_Instance_t *uart_instance);
 
 /**
  * @brief 阻塞式发送函数，发完前阻塞cpu，不建议用
@@ -63,6 +66,8 @@ void Uart_Receive_By_Blocking(uart_package_t *uart_config)
     HAL_UART_Receive(uart_config->uart_handle, uart_config->rx_buffer, uart_config->rx_buffer_size, HAL_MAX_DELAY);
 }
 
+
+
 /**
  * @brief 串口注册
  * 
@@ -93,10 +98,20 @@ Uart_Instance_t* Uart_Register(uart_package_t *uart_config)
     memset(uart_config->rx_buffer, 0,uart_config->rx_buffer_size);      /*把包里rx缓冲区的内容全部初始化为0*/
     uart_instance->uart_package = *uart_config;
 
-    HAL_UARTEx_ReceiveToIdle_IT(uart_instance->uart_package.uart_handle,
-                                uart_instance->uart_package.rx_buffer,
-                                uart_instance->uart_package.rx_buffer_size
-    );
+    if(uart_config->IT_CHOOSE == 0)
+    {
+        __HAL_UART_CLEAR_IDLEFLAG(uart_instance->uart_package.uart_handle);
+        __HAL_UART_ENABLE_IT(uart_instance->uart_package.uart_handle, UART_IT_IDLE);
+        HAL_UART_Receive_DMA(uart_instance->uart_package.uart_handle,
+                             uart_instance->uart_package.rx_buffer,
+                             uart_instance->uart_package.rx_buffer_size);
+    }
+    else if(uart_config->IT_CHOOSE == 1)
+    {
+        HAL_UART_Receive_IT(uart_instance->uart_package.uart_handle,
+                              uart_instance->uart_package.rx_buffer,
+                              uart_instance->uart_package.rx_buffer_size);
+    }
 
     Uart_Device[idx++] = uart_instance;
     return uart_instance;
@@ -104,28 +119,58 @@ Uart_Instance_t* Uart_Register(uart_package_t *uart_config)
 
 }
 
-/**
- * @brief uart事件中断回调
- * 
- * @param huart 
- * @param Size 
- */
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)   /*此处的Size是在进到这个回调函数时，rx_buffer收到的字节数*/
+uint8_t Uart_Receive_Handler(Uart_Instance_t *uart_instance)
 {
-    /*进这个函数的方式不一定是装满，10ms后没消息也会进这个回调函数*/              
-    for(uint8_t i = 0; i<idx ; i++)
-    {                                                             
-        if(huart == Uart_Device[i]->uart_package.uart_handle)
-        {
-            if(Uart_Device[i]->uart_package.uart_callback != NULL)
-            {
-                Uart_Device[i]->uart_package.uart_callback(Uart_Device[i], Size);
-            }
-            HAL_UARTEx_ReceiveToIdle_IT(Uart_Device[i]->uart_package.uart_handle,
-                                        Uart_Device[i]->uart_package.rx_buffer,    
-                                         Uart_Device[i]->uart_package.rx_buffer_size);   /*收满之后会跳进这个回调函数，而且收满一次之后中断接收就不再工作了，所以要在这里重新开启*/
-            break;                            
-        }
+    if(uart_instance == NULL) return 0;
+
+    if(__HAL_UART_GET_FLAG(uart_instance->uart_package.uart_handle, UART_FLAG_IDLE) != RESET)
+    {
+        Uart_Rx_Idle_Callback(uart_instance);
+        return 1;
+    }
+    else
+    {
+        return 0;
     }
 }
 
+static uint8_t Uart_Rx_Idle_Callback(Uart_Instance_t *uart_instance)
+{
+    /*指针非空 */
+    if(uart_instance == NULL) return 0;
+
+    /*数据长度，清除标志位，停一下DMA方便读取NDTR*/
+    static uint16_t uart_rx_num;
+    __HAL_UART_CLEAR_IDLEFLAG(uart_instance->uart_package.uart_handle);
+    HAL_UART_DMAStop(uart_instance->uart_package.uart_handle);
+
+    uart_rx_num = uart_instance->uart_package.rx_buffer_size
+                - ((DMA_Stream_TypeDef*)uart_instance->uart_package.uart_handle->hdmarx->Instance)->NDTR;
+    if(uart_instance->uart_package.uart_callback != NULL)
+    {
+        uart_instance->uart_package.uart_callback(uart_instance, uart_rx_num);
+    }    
+    else 
+    {
+        return 0;
+    }
+
+    HAL_UART_Receive_DMA(uart_instance->uart_package.uart_handle,
+                         uart_instance->uart_package.rx_buffer,
+                         uart_instance->uart_package.rx_buffer_size);
+    return 1;
+}
+
+Uart_Instance_t* Uart_Find_Device(UART_HandleTypeDef* huart)
+{
+    for(int i = 0; i < idx ; i++)
+    {
+        if(Uart_Device[i]->uart_package.uart_handle == huart) return Uart_Device[i];
+    }
+    return NULL;
+}
+
+// void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+// {
+//     Uart_Receive_Handler( Uart_Find_Device(huart));
+// }

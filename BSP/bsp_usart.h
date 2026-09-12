@@ -71,15 +71,16 @@ typedef struct
 
 
 
+Uart_Instance_t* Uart_Register(uart_package_t *uart_config);
 
 uint8_t Uart_Tx_By_Blocking(Uart_Tx_Package_t tx_package);
 uint8_t Uart_Tx_By_It(Uart_Tx_Package_t tx_package);
 uint8_t Uart_Tx_By_DMA(Uart_Tx_Package_t tx_package);
 
-
 void Uart_Receive_By_Blocking(uart_package_t *uart_config);
-Uart_Instance_t* Uart_Register(uart_package_t *uart_config);
 
+uint8_t Uart_Receive_Handler(Uart_Instance_t *uart_instance);
+Uart_Instance_t* Uart_Find_Device(UART_HandleTypeDef* huart);
 
 #ifdef __cplusplus
 }
