@@ -12,10 +12,13 @@
 #include "debug_task.h"
 #include "bsp_usart.h"
 #include "cmsis_os2.h"
+#include "memory_map.h"
+#include "double_buffer.hpp"
+#include "lockfree_queue.hpp"
 
 osThreadId_t Debug_TaskHandle;
 
-static uint8_t my_rx_buffer[RX_BUFFER_SIZE];
+DMA_BUFFER_ATTR static uint8_t my_rx_buffer[RX_BUFFER_SIZE];
 
 
 static uint8_t MyEcho(void *uart_device, uint16_t rx_buf_num)

@@ -42,23 +42,45 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths
 )
 
+# 递归收集所有用户源文件（以后加新文件不用改这里）
+file(GLOB_RECURSE SOURCES
+    "BSP/*.c"
+    "BSP/*.cpp"
+    "APP/*.c"
+    "APP/*.cpp"
+    "Algorithm/*.c"
+    "Algorithm/*.cpp"
+)
+
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
-    BSP/bsp_usart.c
-    APP/debug_task/debug_task.cpp
-    APP/robot_task/robot_task.cpp
-    APP/robot_init/robot.cpp
+    ${SOURCES}
 )
+
+# 递归添加头文件路径：把目录及其所有子目录都加进 include 路径
+function(include_sub_directories_recursively root_dir)
+    if(IS_DIRECTORY ${root_dir})
+        include_directories(${root_dir})
+    endif()
+    file(GLOB children LIST_DIRECTORIES true ${root_dir}/*)
+    foreach(child ${children})
+        if(IS_DIRECTORY ${child})
+            include_sub_directories_recursively(${child})
+        endif()
+    endforeach()
+endfunction()
+
+
+# 递归添加头文件路径（以后新建子文件夹也不用改这里）
+include_sub_directories_recursively(${CMAKE_SOURCE_DIR}/BSP)
+include_sub_directories_recursively(${CMAKE_SOURCE_DIR}/APP)
+include_sub_directories_recursively(${CMAKE_SOURCE_DIR}/Algorithm)
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
-    BSP
-    APP/debug_task
-    APP/robot_task
-    APP/robot_init
 )
+
 
 # Add project symbols (macros)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
