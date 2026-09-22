@@ -50,6 +50,8 @@ file(GLOB_RECURSE SOURCES
     "APP/*.cpp"
     "Algorithm/*.c"
     "Algorithm/*.cpp"
+    "Module/*.c"
+    "Module/*.cpp"
 )
 
 # Add sources to executable
@@ -75,6 +77,7 @@ endfunction()
 include_sub_directories_recursively(${CMAKE_SOURCE_DIR}/BSP)
 include_sub_directories_recursively(${CMAKE_SOURCE_DIR}/APP)
 include_sub_directories_recursively(${CMAKE_SOURCE_DIR}/Algorithm)
+include_sub_directories_recursively(${CMAKE_SOURCE_DIR}/Module)
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE

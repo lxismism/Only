@@ -3,7 +3,16 @@
     "allow": [
       "Read(//c/Users/ismismlxu/Desktop/electric_contest/**)",
       "Bash(ls -la \"C:/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE\" 2>&1)",
-      "Read(//c/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE/**)"
+      "Read(//c/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE/**)",
+      "Bash(find \"c:/Users/ismismlxu/Desktop/ROBOCON2026\" -maxdepth 4 -type f \\\\\\( -iname \"*uart*\" -o -iname \"*serial*\" -o -iname \"*usart*\" -o -iname \"*dma*\" \\\\\\) 2>/dev/null)",
+      "Read(//c/Users/ismismlxu/Desktop/ROBOCON2026/**)",
+      "Bash(cd \"C:/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE\" && grep -rn \"EnablePending\\\\|SetPendingLength\\\\|SetActiveLength\\\\|SetActiveBlock\\\\|GetPendingLength\" --include=*.cpp --include=*.hpp --include=*.h . | grep -v build/ | head -50)",
+      "Bash(cd \"C:/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE\" && grep -rn \"UartPort\\\\|com_config\\\\|UartPort::\\\\|new UartPort\\\\|DMA_BUFFER_ATTR\" --include=*.cpp --include=*.hpp --include=*.h . | grep -v \"build/\" | grep -v \"BSP/UartPort\" | head -60)",
+      "Read(//c/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE/APP/robot_task/**)",
+      "Bash(cd \"C:/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE\" && echo \"=== Module 目录结构 ===\" && ls -R Module/ 2>/dev/null | head -80)",
+      "Read(//c/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE/Module/topics/**)",
+      "Bash(cd \"C:/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE\" && echo \"=== lockfree_ringbuffer 是否存在/被谁用 ===\" && find . -iname \"lockfree_ringbuffer*\" -not -path \"*/build/*\" 2>/dev/null; echo \"--- grep 引用 ---\" && grep -rn \"lockfree_ringbuffer\\\\|SpscOverwriteRing\\\\|lockfree_ringbuf\" --include=*.cpp --include=*.hpp --include=*.h . 2>/dev/null | grep -v \"build/\"; echo \"=== 用户项目 Algorithm 目录 ===\" && ls \"C:/Users/ismismlxu/Desktop/ROBOCON_Only/Only/Algorithm/\" 2>/dev/null)",
+      "Read(//c/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE/Algorithm/**)"
     ]
   }
 }

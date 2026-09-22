@@ -9,6 +9,7 @@
  * 
  */
 
+#pragma once
 #include <cstddef>
 #include <cstdint>
 #include <atomic>
@@ -34,7 +35,6 @@ public:
     }
     MpscQueue(const MpscQueue &) =delete;
     MpscQueue &operator=(const MpscQueue &) =delete;
-    
 
     template<typename T> QueueError TryPush(T &&item) noexcept {
         size_t pos = enqueue_pos_.load(std::memory_order_relaxed); 

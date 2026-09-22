@@ -8,10 +8,20 @@
  * @copyright Copyright (c) 2026
  * 
  */
-
+#include "main.h"
 #include "robot.h"
 #include "robot_task.h"
+#include "com_config.h"
 void Robot_Init()
 {
+    __disable_irq();
+
+    /*通信外设初始化*/
+    if(comServiceInit() != 0){
+        Error_Handler();
+    }
+
     osTaskInit();
+
+    __enable_irq();
 }

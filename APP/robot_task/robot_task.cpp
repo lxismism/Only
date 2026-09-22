@@ -14,8 +14,10 @@
 #include "cmsis_os2.h"
 #include "task.h"
 #include "debug_task.h"
+#include "com_config.h"
 
 extern osThreadId_t Debug_TaskHandle;
+extern osThreadId_t uart3Process_TaskHandle;
 
 void osTaskInit(void)
 {
@@ -25,5 +27,12 @@ void osTaskInit(void)
         .priority = (osPriority_t)osPriorityNormal,
     };
     Debug_TaskHandle = osThreadNew(debugTask, NULL, &DebugTaskHandle_attributes);
+
+    const osThreadAttr_t uart3ProcessTaskHandle_attributes = {
+        .name = "uart3Process_TaskHandle",
+        .stack_size = 256 * 4,
+        .priority = (osPriority_t)osPriorityNormal,
+    };
+    uart3Process_TaskHandle = osThreadNew(uart3RxProcessTask, NULL, &uart3ProcessTaskHandle_attributes);
 
 }
