@@ -105,10 +105,78 @@ private:
     alignas(32) std::atomic<size_t> enqueue_pos_;
     alignas(32) std::atomic<size_t> dequeue_pos_;
 
-
-
 };
 
+template <typename T, uint32_t MaxCapacity> class SpscOverwriteRing{
+public:
+    SpscOverwriteRing() = default;
 
+    bool Init(uint32_t capacity){
+        if(capacity == 0U){
+            capacity = 1U;
+        }else if(capacity > MaxCapacity){
+            capacity = MaxCapacity;
+        }
+        capacity_ = capacity;   
+        head_.store(0U,std::memory_order_relaxed);
+        tail_.store(0U,std::memory_order_relaxed);
+        return true;
+    }
+
+    bool IsReady() const { return capacity_ > 0U ;}
+
+    void Clear(){
+        if(!IsReady()){
+            return;
+        }
+        head_.store(0U,std::memory_order_relaxed);
+        tail_.store(0U,std::memory_order_relaxed);
+    }
+
+
+    void Push(const T &item){
+        if(!IsReady()){ 
+            return; 
+        }
+
+
+        uint32_t tail = tail_.load(std::memory_order_relaxed);
+        uint32_t next_tail = Inc(tail);
+        uint32_t head = head_.load(std::memory_order_acquire);
+
+        if(next_tail == head){
+            head_.store(Inc(head),std::memory_order_release);
+        }
+
+        items_[tail] = item;
+        tail_.store(next_tail, std::memory_order_release);
+    }
+
+    bool Pop(T *out){
+        if(out == nullptr || capacity_ == 0U){
+            return false;
+        }
+
+        uint32_t head = head_.load(std::memory_order_relaxed);
+        uint32_t tail = tail_.load(std::memory_order_acquire);
+        
+        if(head == tail) return false;
+
+        *out = items_[head];
+        head_.store(Inc(head),std::memory_order_release);
+
+        return true;
+    }
+
+
+
+private:
+    T items_[MaxCapacity]{};
+    uint32_t capacity_;     //注意！！！！如果此行写成uint32_t capacity_{};，将会导致队列在进入main前最终的capacity_为0
+    std::atomic<uint32_t> head_{0};
+    std::atomic<uint32_t> tail_{0};
+
+    uint32_t Inc(uint32_t index){ return (index + 1U) % capacity_; }
+};
 
 }

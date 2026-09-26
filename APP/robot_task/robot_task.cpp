@@ -13,20 +13,24 @@
 #include "FreeRTOS.h"
 #include "cmsis_os2.h"
 #include "task.h"
-#include "debug_task.h"
+#include "debug1_task.h"
+#include "debug2_task.h"
 #include "com_config.h"
 
-extern osThreadId_t Debug_TaskHandle;
+
+extern osThreadId_t Debug1_TaskHandle;
+extern osThreadId_t Debug2_TaskHandle;
 extern osThreadId_t uart3Process_TaskHandle;
+
 
 void osTaskInit(void)
 {
-    const osThreadAttr_t DebugTaskHandle_attributes = {
-        .name = "Debug_TaskHandle",
+    const osThreadAttr_t Debug1TaskHandle_attributes = {
+        .name = "Debug1_TaskHandle",
         .stack_size = 256 * 4,
         .priority = (osPriority_t)osPriorityNormal,
     };
-    Debug_TaskHandle = osThreadNew(debugTask, NULL, &DebugTaskHandle_attributes);
+    Debug1_TaskHandle = osThreadNew(debug1Task, NULL, &Debug1TaskHandle_attributes);
 
     const osThreadAttr_t uart3ProcessTaskHandle_attributes = {
         .name = "uart3Process_TaskHandle",
@@ -35,4 +39,12 @@ void osTaskInit(void)
     };
     uart3Process_TaskHandle = osThreadNew(uart3RxProcessTask, NULL, &uart3ProcessTaskHandle_attributes);
 
+    const osThreadAttr_t Debug2TaskHandle_attributes = {
+        .name = "Debug2_TaskHandle",
+        .stack_size = 256 * 4,
+        .priority = (osPriority_t)osPriorityNormal,
+    };
+    Debug2_TaskHandle = osThreadNew(debug2Task, NULL, &Debug2TaskHandle_attributes);
+
+    
 }

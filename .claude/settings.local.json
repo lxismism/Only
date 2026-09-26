@@ -12,7 +12,8 @@
       "Bash(cd \"C:/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE\" && echo \"=== Module 目录结构 ===\" && ls -R Module/ 2>/dev/null | head -80)",
       "Read(//c/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE/Module/topics/**)",
       "Bash(cd \"C:/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE\" && echo \"=== lockfree_ringbuffer 是否存在/被谁用 ===\" && find . -iname \"lockfree_ringbuffer*\" -not -path \"*/build/*\" 2>/dev/null; echo \"--- grep 引用 ---\" && grep -rn \"lockfree_ringbuffer\\\\|SpscOverwriteRing\\\\|lockfree_ringbuf\" --include=*.cpp --include=*.hpp --include=*.h . 2>/dev/null | grep -v \"build/\"; echo \"=== 用户项目 Algorithm 目录 ===\" && ls \"C:/Users/ismismlxu/Desktop/ROBOCON_Only/Only/Algorithm/\" 2>/dev/null)",
-      "Read(//c/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE/Algorithm/**)"
+      "Read(//c/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE/Algorithm/**)",
+      "Bash(cd \"C:/Users/ismismlxu/Desktop/ROBOCON2026/ROBOCON26_V.CMAKE\" && echo \"=== C++ standard ===\" && grep -rn \"CMAKE_CXX_STANDARD\\\\|std=c++\\\\|c++1\" CMakeLists.txt cmake/ 2>/dev/null | grep -v build/ | head -10; echo \"=== source glob 顺序 ===\" && grep -n \"GLOB\\\\|\\\\.cpp\\\\|\\\\.c\\\\b\\\\|Module\\\\|APP\\\\|BSP\\\\|Algorithm\" CMakeLists.txt 2>/dev/null | head -40)"
     ]
   }
 }

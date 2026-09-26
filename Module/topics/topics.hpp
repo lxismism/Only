@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include "lockfree_queue.hpp"
 
 /*静态内存配置*/
 
@@ -36,10 +37,13 @@
 #define TOPICS_MAX_SUBS_PER_TOPIC 4U
 #endif
 
-typedef struct publish_data_t {
-    uint8_t *data;
+struct publish_slot{
+    uint8_t data[TOPICS_MAX_MESSAGE_SIZE];
     int len;
-} publish_data;
+};
+struct topic_queue_t{
+    Algorithm::SpscOverwriteRing<publish_slot, TOPICS_MAX_HISTORY_LEN + 1U> ring;
+};
 
 struct internal_topic;
 struct subscriber_state;
@@ -47,20 +51,59 @@ struct subscriber_state;
 class TopicPublisher{
 public:
     explicit TopicPublisher(const char *topic);
-    bool IsValid() const {return topic_ != nullptr;}
-    bool Publish(uint8_t *data, int len) const;
+    bool Publish(uint8_t *value, int len) const;
 
 private:
     internal_topic *topic_{nullptr};
+    
 };
 
 class TopicSubscriber{
 public:
     TopicSubscriber(const char *topic, uint32_t buffer_len);
-    bool IsValid() const {return sub_ != nullptr;}
-    bool TryGet(publish_data *out) const;
+    bool TryGet(publish_slot *out) const ;
 
 private:
     subscriber_state *sub_{nullptr};
+
+};
+
+template<typename T> class TypedTopicPublisher{
+public:
+    TypedTopicPublisher(const char *topic) : pub_(topic) {}
+
+    bool Publish(const T &value) const{
+        return pub_.Publish(
+            const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(&value)),
+            static_cast<int>(sizeof(T)));
+    }
+
+private:
+    TopicPublisher pub_;
+};
+
+template<typename T> class TypedTopicSubscriber{
+public:
+    explicit TypedTopicSubscriber(const char *topic, uint32_t buffer_len)
+        : sub_(topic, buffer_len){}
+
+    bool TryGet(T *out) const {
+        if(out == nullptr){
+            return false;
+        }
+        publish_slot packet{};
+        if(!sub_.TryGet(&packet)){
+            return false;
+        }
+        if(packet.len != sizeof(T)){
+            return false;
+        }
+        memcpy(out, packet.data, static_cast<int>(sizeof(T)));
+        return true;
+    }
+
+private:
+    TopicSubscriber sub_;
+
 };
 
