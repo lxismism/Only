@@ -12,14 +12,20 @@
 #include "robot.h"
 #include "robot_task.h"
 #include "com_config.h"
+#include "topics.hpp"
+#include "bsp_dwt.h"
+
 void Robot_Init()
 {
     __disable_irq();
+
+    DWT_Init(SystemCoreClock / 1000000U);
 
     /*通信外设初始化*/
     if(comServiceInit() != 0){
         Error_Handler();
     }
+    subsQueueInit();
 
     osTaskInit();
 

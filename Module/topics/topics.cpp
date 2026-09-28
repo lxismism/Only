@@ -24,6 +24,7 @@ struct internal_topic{
 
 struct subscriber_state{
     topic_queue_t queue;
+    uint32_t buffer_len;
     internal_topic *topic;
     struct subscriber_state *next;
     bool in_use;
@@ -55,7 +56,7 @@ static subscriber_state *AllocateSubscriber(internal_topic *topic, uint32_t buff
         if(!item.in_use){
             item.topic = topic;
             item.next = nullptr;
-            if(!item.queue.ring.Init(buffer_len + 1U)) return nullptr;     
+            item.buffer_len = buffer_len;
             item.in_use = true;
             topic->sub_count += 1U;                                               
             return &item;
@@ -109,6 +110,7 @@ public:
         static TopicBus Instance;
         return Instance;
     }
+    internal_topic* GetTopicHead() const { return topics_; }
 
     internal_topic *RegisterTopic(const char *topic){
         if(topic == nullptr) return nullptr;
@@ -153,3 +155,12 @@ TopicSubscriber::TopicSubscriber(const char *topic, uint32_t buffer_len){
 
 }
 
+void subsQueueInit(){
+    for(internal_topic *topic_id = TopicBus::Instance().GetTopicHead();
+            topic_id != nullptr; topic_id = topic_id->next){
+        for(subscriber_state *subs_id = topic_id->subs;
+                subs_id != nullptr; subs_id = subs_id->next){
+                    subs_id->queue.ring.Init(subs_id->buffer_len + 1U);
+                }
+    }
+}

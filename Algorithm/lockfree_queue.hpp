@@ -111,7 +111,7 @@ template <typename T, uint32_t MaxCapacity> class SpscOverwriteRing{
 public:
     SpscOverwriteRing() = default;
 
-    bool Init(uint32_t capacity){
+    void Init(uint32_t capacity){
         if(capacity == 0U){
             capacity = 1U;
         }else if(capacity > MaxCapacity){
@@ -120,7 +120,6 @@ public:
         capacity_ = capacity;   
         head_.store(0U,std::memory_order_relaxed);
         tail_.store(0U,std::memory_order_relaxed);
-        return true;
     }
 
     bool IsReady() const { return capacity_ > 0U ;}
@@ -172,7 +171,7 @@ public:
 
 private:
     T items_[MaxCapacity]{};
-    uint32_t capacity_;     //注意！！！！如果此行写成uint32_t capacity_{};，将会导致队列在进入main前最终的capacity_为0
+    uint32_t capacity_{0};     //注意！！！！如果此行写成uint32_t capacity_{0};，将会导致队列在进入main前最终的capacity_为0
     std::atomic<uint32_t> head_{0};
     std::atomic<uint32_t> tail_{0};
 

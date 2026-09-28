@@ -21,6 +21,7 @@
 #include "FreeRTOS.h"
 #include "cmsis_os2.h"
 #include "dma.h"
+#include "fdcan.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -99,6 +100,9 @@ int main(void)
   MX_DMA_Init();
   MX_USART3_UART_Init();
   MX_USART2_UART_Init();
+  MX_FDCAN1_Init();
+  MX_FDCAN2_Init();
+  MX_FDCAN3_Init();
   /* USER CODE BEGIN 2 */
   Robot_Init();
   /* USER CODE END 2 */
@@ -152,7 +156,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLM = 2;
   RCC_OscInitStruct.PLL.PLLN = 44;
   RCC_OscInitStruct.PLL.PLLP = 1;
-  RCC_OscInitStruct.PLL.PLLQ = 2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
