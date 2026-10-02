@@ -18,16 +18,12 @@
 
 osThreadId_t Debug2_TaskHandle;
 
-static TypedTopicSubscriber<debug_data_t> debug_data_sub("debug", 4);
-static debug_data_t sub_d{};
 
 void debug2Task(void *argument){
     TickType_t currentTime = xTaskGetTickCount();
 
     for(;;){
-        if(debug_data_sub.TryGet(&sub_d)){
 
-        }
         vTaskDelayUntil(&currentTime, 5);
     }
 

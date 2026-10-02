@@ -21,6 +21,7 @@
 extern osThreadId_t Debug1_TaskHandle;
 extern osThreadId_t Debug2_TaskHandle;
 extern osThreadId_t uart3Process_TaskHandle;
+extern osThreadId_t can3Send_TaskHandle;
 
 
 void osTaskInit(void)
@@ -46,5 +47,11 @@ void osTaskInit(void)
     };
     Debug2_TaskHandle = osThreadNew(debug2Task, NULL, &Debug2TaskHandle_attributes);
 
+    const osThreadAttr_t can3SendTaskHandle_attributes = {
+        .name = "can3Send_TaskHandle",
+        .stack_size = 256 * 4,
+        .priority = (osPriority_t)osPriorityRealtime,
+    };
+    can3Send_TaskHandle = osThreadNew(can3SendTask, NULL, &can3SendTaskHandle_attributes);
     
 }

@@ -16,26 +16,23 @@
 #include "lockfree_queue.hpp"
 #include "UartPort.hpp"
 #include "topics.hpp"
+#include "Canbus.hpp"
+#include "Motor.hpp"
+#include "com_config.h"
+
 
 osThreadId_t Debug1_TaskHandle;
 
 
-static TypedTopicPublisher<debug_data_t> debug_data("debug");
-static debug_data_t debug_d{}; 
-
 
 void debug1Task(void *argument)
 {
-    TickType_t currentTime;
-    currentTime = xTaskGetTickCount();
+    TickType_t currentTime = xTaskGetTickCount();
     
     for(;;)
     {
-        debug_d.a +=2;
-        debug_d.b +=4;
-        debug_d.c +=8;
-        debug_data.Publish(debug_d);
-        vTaskDelayUntil(&currentTime, 1000);
+
+        vTaskDelayUntil(&currentTime, 5);
     }
 
 }

@@ -171,7 +171,7 @@ public:
 
 private:
     T items_[MaxCapacity]{};
-    uint32_t capacity_{0};     //注意！！！！如果此行写成uint32_t capacity_{0};，将会导致队列在进入main前最终的capacity_为0
+    uint32_t capacity_{0};     
     std::atomic<uint32_t> head_{0};
     std::atomic<uint32_t> tail_{0};
 

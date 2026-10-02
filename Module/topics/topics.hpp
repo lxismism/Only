@@ -1,6 +1,6 @@
 /**
  * @file topic.hpp
- * @author your name (you@domain.com)
+ * @author lxlx (1729649497@qq.com)
  * @brief 
  * @version 0.1
  * @date 2026-09-22

@@ -14,10 +14,29 @@
 #include "cmsis_os2.h"
 #include "task.h"
 #include "usart.h"
+#include "fdcan.h"
 
 #include "memory_map.h"
 #include "UartPort.hpp"
+#include "Canbus.hpp"
+#include "Motor.hpp"
 
+/*-------------------------------------fdcan----------------------------------------*/
+osThreadId_t can3Send_TaskHandle;
+
+CanBus fdcan1_bus(hfdcan1);
+CanBus fdcan2_bus(hfdcan2);
+CanBus fdcan3_bus(hfdcan3);
+
+C620Motor chassis_motor1(&fdcan3_bus, 0x202, false, 0x200, false);
+
+
+
+/*-------------------------------------fdcan----------------------------------------*/
+
+
+
+/*-------------------------------------usart----------------------------------------*/
 osThreadId_t uart3Process_TaskHandle;
 
 void onUart3RxCb(const uint8_t *data, size_t len, void *user);
@@ -31,14 +50,39 @@ UartPort uart3_port(&huart3, uart3_rx_dma, sizeof(uart3_rx_dma),
 
 osSemaphoreId_t uart3_rx_semaphore = NULL;
 
+/*-------------------------------------usart----------------------------------------*/
+
 uint8_t comServiceInit(){
+
+    canFilterInit(&hfdcan1, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO0);
+    canFilterInit(&hfdcan1, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO1);
+    bspCanInit(&hfdcan1);
+
+    canFilterInit(&hfdcan2, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO0);
+    canFilterInit(&hfdcan2, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO1);
+    bspCanInit(&hfdcan2);
+
+    canFilterInit(&hfdcan3, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO0);
+    canFilterInit(&hfdcan3, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO1);
+    bspCanInit(&hfdcan3);
+
+    fdcan1_bus.init();
+    fdcan2_bus.init();
+    fdcan3_bus.init();
+
+    chassis_motor1.init();
+    fdcan3_bus.registerDevice(&chassis_motor1);
+
+
     uart3_rx_semaphore = osSemaphoreNew(1, 0, NULL);
     uart3_port.startRxDmaIdle();
+
+
     return 0;
 }
 
 
-
+/*-------------------------------------usart----------------------------------------*/
 void onUart3RxCb(const uint8_t *data, size_t len, void *user){
     (void)user;
     if(data != nullptr && len > 0 && uart3_rx_semaphore != nullptr){
@@ -59,3 +103,35 @@ void uart3RxProcessTask(void *argument){
     }
 }
 
+/*-------------------------------------usart----------------------------------------*/
+
+
+/*-------------------------------------fdcan----------------------------------------*/
+
+void can3SendTask(void *argument){
+    TickType_t current = xTaskGetTickCount();
+
+    for(;;){
+        float cmd = 2000.0f;
+        chassis_motor1.setMotorCmd(cmd);
+
+        uint8_t data[8] = {0};
+        CanBus::ClassicPack pack = {};
+        uint8_t len = 0U;
+
+        uint32_t motor_ids[4] = {0, 0x202, 0 ,0};
+        int16_t commands[4] = {0, static_cast<uint16_t>(C620Motor::cmdTrans(cmd)), 0, 0};
+
+        packDJIMotorCanMsg(0x200, motor_ids, commands, 4U, data, len);
+
+        pack.id = 0x200;
+        pack.type = CanBus::Type::STANDARD;
+        for(uint8_t i = 0; i < 8; ++i) pack.data[i] = data[i];
+        fdcan3_bus.addCanMsg(pack);
+
+        vTaskDelayUntil(&current, 1);
+    }
+
+}
+
+/*-------------------------------------fdcan----------------------------------------*/
