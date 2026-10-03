@@ -19,20 +19,20 @@
 #include "Canbus.hpp"
 #include "Motor.hpp"
 #include "com_config.h"
+#include "pid_controller.h"
 
 
 osThreadId_t Debug1_TaskHandle;
 
-
-
 void debug1Task(void *argument)
 {
     TickType_t currentTime = xTaskGetTickCount();
-    
+
     for(;;)
     {
 
-        vTaskDelayUntil(&currentTime, 5);
+
+        vTaskDelayUntil(&currentTime, 1);
     }
 
 }

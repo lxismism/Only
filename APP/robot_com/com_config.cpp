@@ -16,12 +16,15 @@
 #include "usart.h"
 #include "fdcan.h"
 
+#include "topics.hpp"
 #include "memory_map.h"
 #include "UartPort.hpp"
 #include "Canbus.hpp"
 #include "Motor.hpp"
 
 /*-------------------------------------fdcan----------------------------------------*/
+
+
 osThreadId_t can3Send_TaskHandle;
 
 CanBus fdcan1_bus(hfdcan1);
@@ -29,6 +32,7 @@ CanBus fdcan2_bus(hfdcan2);
 CanBus fdcan3_bus(hfdcan3);
 
 C620Motor chassis_motor1(&fdcan3_bus, 0x202, false, 0x200, false);
+
 
 
 
@@ -112,24 +116,25 @@ void can3SendTask(void *argument){
     TickType_t current = xTaskGetTickCount();
 
     for(;;){
-        float cmd = 2000.0f;
-        chassis_motor1.setMotorCmd(cmd);
+            float cmd = 2000.0f;
+            chassis_motor1.setMotorCmd(cmd);
 
-        uint8_t data[8] = {0};
-        CanBus::ClassicPack pack = {};
-        uint8_t len = 0U;
+            uint8_t data[8] = {0};
+            CanBus::ClassicPack pack = {};
+            uint8_t len = 0U;
 
-        uint32_t motor_ids[4] = {0, 0x202, 0 ,0};
-        int16_t commands[4] = {0, static_cast<uint16_t>(C620Motor::cmdTrans(cmd)), 0, 0};
+            uint32_t motor_ids[4] = {0, 0x202, 0 ,0};
+            int16_t commands[4] = {0, static_cast<int16_t>(chassis_motor1.cmdTrans()), 0, 0};
 
-        packDJIMotorCanMsg(0x200, motor_ids, commands, 4U, data, len);
+            packDJIMotorCanMsg(0x200, motor_ids, commands, 4U, data, len);
 
-        pack.id = 0x200;
-        pack.type = CanBus::Type::STANDARD;
-        for(uint8_t i = 0; i < 8; ++i) pack.data[i] = data[i];
-        fdcan3_bus.addCanMsg(pack);
-
+            pack.id = 0x200;
+            pack.type = CanBus::Type::STANDARD;
+            for(uint8_t i = 0; i < 8; ++i) pack.data[i] = data[i];
+            fdcan3_bus.addCanMsg(pack);
+        
         vTaskDelayUntil(&current, 1);
+        
     }
 
 }

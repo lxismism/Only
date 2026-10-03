@@ -34,3 +34,11 @@ void DWT_Delay(float Delay)
         ;
 
 }
+
+float DWT_GetDeltaT(uint32_t *cnt_last)
+{
+    uint32_t cnt_now = DWT->CYCCNT;
+    float dt = (float)(cnt_now - *cnt_last) / CPU_FREQ_Hz;
+    *cnt_last = cnt_now;
+    return dt;
+}

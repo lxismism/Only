@@ -31,6 +31,8 @@ public:
         }
         cmd_ = cmd;
     }
+    void setMotorRadSpeed(float speed);
+    void setMotorDeg(float deg);
 
     float getSinglePos(void) const { return single_deg_; }
     float getSumPos(void) const { return sum_deg_; }
@@ -103,7 +105,7 @@ public:
 
     }
 
-    static float cmdTrans(float cmd) { return cmd * 16384.0f / 20000.0f;}
+    float cmdTrans() { return cmd_ * 16384.0f / 20000.0f;}
 
     bool buildTx(uint8_t data[8], uint8_t &len) override {
         len = 0;

@@ -28,6 +28,7 @@ typedef struct{
 
 void DWT_Init(uint32_t CPU_Freq_MHz);
 void DWT_Delay(float Delay);
+float DWT_GetDeltaT(uint32_t *cnt_last);
 
 
 #ifdef __cplusplus
