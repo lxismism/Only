@@ -21,6 +21,7 @@
 #include "UartPort.hpp"
 #include "Canbus.hpp"
 #include "Motor.hpp"
+#include "topic_pool.h"
 
 /*-------------------------------------fdcan----------------------------------------*/
 
@@ -33,7 +34,8 @@ CanBus fdcan3_bus(hfdcan3);
 
 C620Motor chassis_motor1(&fdcan3_bus, 0x202, false, 0x200, false);
 
-
+static TypedTopicSubscriber<pub_chassis_cmd> chassis_cmd_sub("chassis_cmd", 8);
+static pub_chassis_cmd chassis_cmd{};
 
 
 /*-------------------------------------fdcan----------------------------------------*/
@@ -116,13 +118,13 @@ void can3SendTask(void *argument){
     TickType_t current = xTaskGetTickCount();
 
     for(;;){
-            float cmd = 2000.0f;
-            chassis_motor1.setMotorCmd(cmd);
+        
+            chassis_cmd_sub.TryGet(&chassis_cmd);
+            chassis_motor1.setMotorCmd(chassis_cmd.chassis_motor1_cmd);
 
             uint8_t data[8] = {0};
             CanBus::ClassicPack pack = {};
             uint8_t len = 0U;
-
             uint32_t motor_ids[4] = {0, 0x202, 0 ,0};
             int16_t commands[4] = {0, static_cast<int16_t>(chassis_motor1.cmdTrans()), 0, 0};
 
@@ -131,12 +133,13 @@ void can3SendTask(void *argument){
             pack.id = 0x200;
             pack.type = CanBus::Type::STANDARD;
             for(uint8_t i = 0; i < 8; ++i) pack.data[i] = data[i];
+
             fdcan3_bus.addCanMsg(pack);
+
         
+
         vTaskDelayUntil(&current, 1);
-        
+
     }
-
 }
-
 /*-------------------------------------fdcan----------------------------------------*/
