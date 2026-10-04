@@ -16,12 +16,16 @@
 #include "debug1_task.h"
 #include "debug2_task.h"
 #include "com_config.h"
+#include "pid_degspeed.h"
+#include "pid_deg.h"
+
 
 
 extern osThreadId_t Debug1_TaskHandle;
 extern osThreadId_t Debug2_TaskHandle;
 extern osThreadId_t uart3Process_TaskHandle;
 extern osThreadId_t can3Send_TaskHandle;
+extern osThreadId_t pidDegSpeed_TaskHandle;
 
 
 void osTaskInit(void)
@@ -53,5 +57,12 @@ void osTaskInit(void)
         .priority = (osPriority_t)osPriorityRealtime,
     };
     can3Send_TaskHandle = osThreadNew(can3SendTask, NULL, &can3SendTaskHandle_attributes);
+
+    const osThreadAttr_t pidDegSpeedTaskHandle_attributes = {
+        .name = "pidDegSpeed_TaskHandle",
+        .stack_size = 256 * 4,
+        .priority = (osPriority_t)osPriorityRealtime,
+    };
+    pidDegSpeed_TaskHandle = osThreadNew(pidDegSpeedTask, NULL, &pidDegSpeedTaskHandle_attributes);
     
 }

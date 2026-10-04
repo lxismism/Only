@@ -12,6 +12,7 @@
 #pragma once
 
 #include "Canbus.hpp"
+#include "pid_controller.h"
 
 #define RAD_2_DEG            57.2957795f
 #define DEG_2_RAD            0.01745329252f
@@ -22,6 +23,8 @@ class MotorBase{
 public:
     MotorBase() = default;
 
+    enum class PIDMode : uint8_t { NONE = 0, SPEED, DEGREE};
+
     void setMotorCmd(float cmd){
         if(cmd > max_cmd_){
             cmd = max_cmd_;
@@ -31,17 +34,26 @@ public:
         }
         cmd_ = cmd;
     }
-    void setMotorRadSpeed(float speed);
-    void setMotorDeg(float deg);
+    
+    void setMotorDegSpeed(float deg_speed) { ref_deg_speed_ = deg_speed; }
+    void setMotorDeg(float deg) { ref_deg_ = deg; }
 
-    float getSinglePos(void) const { return single_deg_; }
-    float getSumPos(void) const { return sum_deg_; }
+    PID_t* getDegSpeedPID(void) { return &deg_speed_pid_;}
+    PID_t* getDegPID(void) { return &deg_pid_;}
+
+    float getRefDegSpeed() { return ref_deg_speed_; }
+    float getRefDeg() { return ref_deg_; }
+
+    float getSingleDeg(void) const { return single_deg_; }
+    float getSumDeg(void) const { return sum_deg_; }
     float getDegSpeed(void) const { return deg_speed_; }
     float getTorque(void) const {return torque_; }
     float getTemperature(void) const { return temperature_; }
 
 protected:
     float cmd_{0.0f};
+    float ref_deg_speed_{0.0f};
+    float ref_deg_{0.0f};
     
     float max_cmd_{99999.0f};
     float reduction_ratio_{1.0f};
@@ -52,24 +64,39 @@ protected:
     float torque_{0.0f};
     float temperature_{0.0f};
 
+    PID_t deg_speed_pid_{};
+    PID_t deg_pid_{};
 };
 
 class C620Motor : public CanDevice , public MotorBase {
 public:
-    C620Motor(CanBus *manager, uint32_t id, bool is_extid,
-              uint32_t tx_id, bool tx_is_extid)
-              : CanDevice(manager, id, is_extid, tx_id, tx_is_extid){}
+    C620Motor(CanBus *manager, uint32_t id, bool is_extid, uint32_t tx_id, bool tx_is_extid, PIDMode pid_mode,
+              float reduction = 3591.0f / 187.0f, float max_cmd = 20000.0f,
+              float speed_kp=0.0f, float speed_ki=0.0f, float speed_kd=0.0f, float max_speed=0.0f, float speed_max_IL=0.0f,
+              float deg_kp=0.0f, float deg_ki=0.0f, float deg_kd=0.0f, float max_deg=0.0f, float deg_max_IL=0.0f)
+              : CanDevice(manager, id, is_extid, tx_id, tx_is_extid){
 
-    void init(float reduction = 3591.0f / 187.0f, float max_cmd = 20000.0f){
-        reduction_ratio_ = reduction;
-        max_cmd_ = max_cmd;
-        is_motor_init_ = true;
-    }
+                reduction_ratio_ = reduction;
+                max_cmd_ = max_cmd;
+
+                deg_speed_pid_.Kp = speed_kp;
+                deg_speed_pid_.Ki = speed_ki;
+                deg_speed_pid_.Kd = speed_kd;
+                deg_speed_pid_.Maxout = max_speed;
+                deg_speed_pid_.IntegralLimit = speed_max_IL;
+                
+                deg_pid_.Kp = deg_kp;
+                deg_pid_.Ki = deg_ki;
+                deg_pid_.Kd = deg_kd;
+                deg_pid_.Maxout = max_deg;
+                deg_pid_.IntegralLimit = deg_max_IL;
+                
+
+            }
 
 
     void onRx(const uint8_t data[8], const uint8_t len) override{
         if(len < 8) return;     
-        if(!is_motor_init_) return;      
         
         /*data[0]~data[1]: encoder data[0]为单圈内转子位置的高8位，data[1]为单圈内转子位置的低八位*/
         encoder_ = (uint16_t)((data[0] << 8) | data[1] );
@@ -115,7 +142,6 @@ public:
     
 
 private:
-    bool is_motor_init_ = false;
     bool is_encoder_init = false;
 
     static constexpr float kCountPerRound = 8192.0f;

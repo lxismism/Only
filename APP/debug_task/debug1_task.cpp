@@ -20,13 +20,16 @@
 #include "Motor.hpp"
 #include "com_config.h"
 #include "pid_controller.h"
-
+#include "topic_pool.h"
 
 osThreadId_t Debug1_TaskHandle;
+
+
 
 void debug1Task(void *argument)
 {
     TickType_t currentTime = xTaskGetTickCount();
+    
 
     for(;;)
     {
