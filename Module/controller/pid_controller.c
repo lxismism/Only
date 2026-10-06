@@ -12,6 +12,8 @@
 #include "pid_controller.h"
 #include "bsp_dwt.h"
 
+static void f_Output_Filter(PID_t *pid);
+
 void PID_Init(PID_t *pid)
 {
     pid->Measure = 0.0f;
@@ -52,11 +54,24 @@ float PID_Calculate(PID_t *pid, float measure, float ref)
     pid->Dout = pid->Kd * (pid->Err - pid->Last_Err) / pid->dt;
 
     pid->Output = pid->Pout + pid->Iout + pid->Dout;
+
+
+    if(pid->Improve & OutputFilter)
+        f_Output_Filter(pid);
+    
+
+
     // 输出限幅
     if (pid->Output > pid->Maxout)  pid->Output = pid->Maxout;
     if (pid->Output < -pid->Maxout) pid->Output = -pid->Maxout;
 
     pid->Last_Err = pid->Err;
+    pid->Last_Output = pid->Output;
 
     return pid->Output;
+}
+
+static void f_Output_Filter(PID_t *pid){
+    pid->Output = (pid->Output * pid->dt + pid->Output_LPF_RC * pid->Last_Output) /
+                 (pid->Output_LPF_RC + pid->dt);
 }

@@ -41,6 +41,19 @@ public:
     PID_t* getDegSpeedPID(void) { return &deg_speed_pid_;}
     PID_t* getDegPID(void) { return &deg_pid_;}
 
+    void pidDegUpdate(void) {
+             ref_deg_speed_ = PID_Calculate(&deg_pid_, sum_deg_, ref_deg_);
+    }
+
+    void pidDegSpeedUpdate(void){
+        cmd_ = PID_Calculate(&deg_speed_pid_, deg_speed_, ref_deg_speed_);
+    }
+
+    void pidUpdate(void){
+        if(output_type_ == PIDMode::DEGREE ) pidDegUpdate();
+        if(output_type_ != PIDMode::NONE) pidDegSpeedUpdate();
+    }
+
     float getRefDegSpeed() { return ref_deg_speed_; }
     float getRefDeg() { return ref_deg_; }
 
@@ -66,30 +79,38 @@ protected:
 
     PID_t deg_speed_pid_{};
     PID_t deg_pid_{};
+    PIDMode output_type_{};
 };
 
 class C620Motor : public CanDevice , public MotorBase {
 public:
-    C620Motor(CanBus *manager, uint32_t id, bool is_extid, uint32_t tx_id, bool tx_is_extid, PIDMode pid_mode,
-              float reduction = 3591.0f / 187.0f, float max_cmd = 20000.0f,
-              float speed_kp=0.0f, float speed_ki=0.0f, float speed_kd=0.0f, float max_speed=0.0f, float speed_max_IL=0.0f,
-              float deg_kp=0.0f, float deg_ki=0.0f, float deg_kd=0.0f, float max_deg=0.0f, float deg_max_IL=0.0f)
+    C620Motor(CanBus *manager, uint32_t id, bool is_extid, uint32_t tx_id, bool tx_is_extid, const PIDMode output_type,
+              float reduction = 3591.0f / 187.0f, float max_cmd = 20000.0f, float output_filter_rc = 0.0f,
+              float speed_kp=0.0f, float speed_ki=0.0f, float speed_kd=0.0f, float speed_max_out = 20000.0f, float speed_max_IL = 20000.0f,
+              float pid_speed_improve = NONE,
+              float deg_kp=0.0f, float deg_ki=0.0f, float deg_kd=0.0f, float max_deg=2000.0f, float deg_max_IL=2000.0f,
+              float pid_deg_improve = NONE)
               : CanDevice(manager, id, is_extid, tx_id, tx_is_extid){
 
                 reduction_ratio_ = reduction;
                 max_cmd_ = max_cmd;
+                output_type_ = output_type;
 
                 deg_speed_pid_.Kp = speed_kp;
                 deg_speed_pid_.Ki = speed_ki;
                 deg_speed_pid_.Kd = speed_kd;
-                deg_speed_pid_.Maxout = max_speed;
+                deg_speed_pid_.Maxout = speed_max_out;
                 deg_speed_pid_.IntegralLimit = speed_max_IL;
+
+                deg_speed_pid_.Output_LPF_RC = output_filter_rc;
+                deg_speed_pid_.Improve = pid_speed_improve;
                 
                 deg_pid_.Kp = deg_kp;
                 deg_pid_.Ki = deg_ki;
                 deg_pid_.Kd = deg_kd;
                 deg_pid_.Maxout = max_deg;
                 deg_pid_.IntegralLimit = deg_max_IL;
+                deg_pid_.Improve = pid_deg_improve;
                 
 
             }
@@ -159,3 +180,13 @@ private:
 void packDJIMotorCanMsg(const uint32_t tx_id, const uint32_t *motor_ids,
                         const int16_t *commands,const uint8_t motor_count, 
                         uint8_t *data, uint8_t &len);
+
+class VESCMotor : public CanDevice , public MotorBase {
+public:
+
+    
+
+private:
+
+
+};

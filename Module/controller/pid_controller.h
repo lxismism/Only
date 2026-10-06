@@ -18,6 +18,11 @@ extern "C"{
 
 #include <stdint.h>
 
+typedef enum pid_Inprovement_e{
+    NONE = 0x00,
+    OutputFilter = 0x10,
+} pid_Inprovement_e;
+
 typedef struct{
     float Kp;
     float Ki;
@@ -31,12 +36,16 @@ typedef struct{
     float ITerm;
     float Pout, Iout, Dout;
     float Output;
+    float Last_Output;
 
     float IntegralLimit;
     float Maxout;
 
     uint32_t DWT_CNT;
     float dt;
+
+    float Output_LPF_RC;
+    uint16_t Improve;
 } PID_t;
 
 void PID_Init(PID_t *pid);

@@ -16,9 +16,6 @@
 
 #pragma pack(1)
 
-typedef struct {
-    float chassis_motor1_cmd;
-} pub_chassis_cmd;
 
 
 #pragma pack()
