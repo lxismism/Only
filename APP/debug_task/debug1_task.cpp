@@ -21,6 +21,8 @@
 #include "com_config.h"
 #include "pid_controller.h"
 #include "topic_pool.h"
+#include "chassis_solution.hpp"
+#include "chassis_task.h"
 
 osThreadId_t Debug1_TaskHandle;
 

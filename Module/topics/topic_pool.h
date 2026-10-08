@@ -16,6 +16,10 @@
 
 #pragma pack(1)
 
-
+typedef struct{
+    float linear_x_;
+    float linear_y_;
+    float omega_;
+} pub_chassis_cmd;
 
 #pragma pack()

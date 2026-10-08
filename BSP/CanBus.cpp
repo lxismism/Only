@@ -43,13 +43,13 @@ int8_t busIndexFromHandle(FDCAN_HandleTypeDef *hfdcan){
 CanBus* CanBus::map_[FDCAN_BUS_CNT] = {nullptr, nullptr, nullptr};
 
 void canFilterInit(FDCAN_HandleTypeDef *hcan, uint32_t idType,
-                   uint32_t id, uint32_t maskId, uint32_t fifo){
+                   uint32_t id, uint32_t maskId, uint32_t fifo, uint32_t filterIndex){
     FDCAN_FilterTypeDef sFilterConfig = {0};
     
     sFilterConfig.FilterConfig = fifo;
     sFilterConfig.FilterID1 = id;
     sFilterConfig.FilterID2 = maskId;
-    sFilterConfig.FilterIndex = 0;
+    sFilterConfig.FilterIndex = filterIndex;
     sFilterConfig.FilterType = FDCAN_FILTER_MASK;
     sFilterConfig.IdType = idType;
     sFilterConfig.IsCalibrationMsg = 0;
@@ -71,14 +71,12 @@ void bspCanInit(FDCAN_HandleTypeDef *hcan){
     if(HAL_FDCAN_ActivateNotification(hcan, 
                                       FDCAN_IT_RX_FIFO0_NEW_MESSAGE |
                                       FDCAN_IT_RX_FIFO1_NEW_MESSAGE |
-                                      FDCAN_IT_BUS_OFF | FDCAN_IT_ERROR_PASSIVE, 
+                                      FDCAN_IT_BUS_OFF | FDCAN_IT_ERROR_PASSIVE |
+                                      FDCAN_IT_TX_FIFO_EMPTY,
                                       0) != HAL_OK){
         Error_Handler();
     }
 
-    if(HAL_FDCAN_TT_ActivateNotification(hcan, FDCAN_IT_TX_FIFO_EMPTY) != HAL_OK){
-        Error_Handler();
-    }
 
     if(HAL_FDCAN_Start(hcan) != HAL_OK){
         Error_Handler();
@@ -125,12 +123,14 @@ CanBus::CanError CanBus::registerDevice(CanDevice *device){
 }
 
 CanBus::CanError CanBus::addCanMsg(const ClassicPack &pack){
+    CanError result = CanError::OK;
+    
     if(tx_queue_.TryPush(pack) != Algorithm::QueueError::OK){
-        return CanError::ERROR;
+        return result = CanError::ERROR;
     }
 
     txService();
-    return CanError::OK;
+    return result;
 }
 
 void CanBus::processRxInterrupt(uint32_t fifo){
@@ -169,9 +169,9 @@ void CanBus::txService(){
             FDCAN_TxHeaderTypeDef tx_header = {0};
             tx_header.Identifier = pakcet.id;
             tx_header.IdType = (pakcet.type == Type::EXTENDED) ? FDCAN_EXTENDED_ID
-                                                               : FDCAN_STANDARD_ID;
+                                                                 : FDCAN_STANDARD_ID;
             tx_header.TxFrameType = FDCAN_DATA_FRAME;
-            tx_header.DataLength = FDCAN_DLC_BYTES_8;
+            tx_header.DataLength = pakcet.dlc;
             tx_header.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
             tx_header.BitRateSwitch = FDCAN_BRS_OFF;
             tx_header.FDFormat = FDCAN_CLASSIC_CAN;
