@@ -41,23 +41,39 @@ public:
         const float rad_ld = std::atan2(vy - omega * kx , vx + omega * ky);
         const float rad_rd = std::atan2(vy + omega * kx , vx + omega * ky);
 
-        drivemotors_[0]->setMotorDegSpeed(v_ru / kWheelRadmeter * RAD_2_DEG);
-        drivemotors_[1]->setMotorDegSpeed(v_lu / kWheelRadmeter * RAD_2_DEG);
-        drivemotors_[2]->setMotorDegSpeed(v_ld / kWheelRadmeter * RAD_2_DEG);
-        drivemotors_[3]->setMotorDegSpeed(v_rd / kWheelRadmeter * RAD_2_DEG);
 
-        dirmotors_[0]->setMotorDeg(rad_ru * RAD_2_DEG);
-        dirmotors_[1]->setMotorDeg(rad_lu * RAD_2_DEG);
-        dirmotors_[2]->setMotorDeg(rad_ld * RAD_2_DEG);
-        dirmotors_[3]->setMotorDeg(rad_rd * RAD_2_DEG);
+        //最小转动角度
+        deg_output_[0] = rad_ru * RAD_2_DEG;
+        deg_output_[1] = rad_lu * RAD_2_DEG;
+        deg_output_[2] = rad_ld * RAD_2_DEG;
+        deg_output_[3] = rad_rd * RAD_2_DEG;
+
+        degspeed_output_[0] = v_ru / kWheelRadmeter * RAD_2_DEG;
+        degspeed_output_[1] = v_lu / kWheelRadmeter * RAD_2_DEG;
+        degspeed_output_[2] = v_ld / kWheelRadmeter * RAD_2_DEG;
+        degspeed_output_[3] = v_rd / kWheelRadmeter * RAD_2_DEG;
+
+
+//TODO:最小路径
+
+
+        /*输出degree为基本单位的角度和角速度*/
+        for(uint8_t i = 0; i < kWheelNum; ++i){
+            dirmotors_[i]->setMotorDeg(deg_output_[i]);
+            drivemotors_[i]->setMotorDegSpeed(degspeed_output_[i]);
+        }
+
 
     }
+
+
 
 private:
 
     static constexpr float kWheelDiameter = 0.104f;
     static constexpr float kWheelRadmeter = kWheelDiameter / 2.0f;
     static constexpr float kWheelCirmeter = PI * kWheelDiameter;
+    static constexpr uint8_t kWheelNum = 4U;
 
     static constexpr float kWheelbase = 1.0f;   //轴距
     static constexpr float kWheeltrack = 1.0f;  //轮距
@@ -67,7 +83,13 @@ private:
     static constexpr float ky = kWheelbase / 2.0f;  //ky的含义是，点到x轴的距离
     static constexpr float kx = kWheeltrack / 2.0f; //kx的含义是，点到y轴的距离
 
-    std::array<MotorBase*, 4> dirmotors_{};
-    std::array<MotorBase*, 4> drivemotors_{};
+    std::array<MotorBase*, kWheelNum> dirmotors_{};
+    std::array<MotorBase*, kWheelNum> drivemotors_{};
+
+    std::array<float, kWheelNum> deg_output_{};
+    std::array<float, kWheelNum> degspeed_output_{};
+    std::array<float, kWheelNum> deg_current{};
+
+//TODO:更新当前角度的函数
 
 };
