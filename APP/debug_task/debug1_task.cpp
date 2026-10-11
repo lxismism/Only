@@ -16,17 +16,23 @@
 #include "lockfree_queue.hpp"
 #include "UartPort.hpp"
 #include "topics.hpp"
+
 #include "Canbus.hpp"
-#include "Motor.hpp"
+#include "MotorBase.hpp"
+#include "djiMotor.hpp"
+#include "dmMotor.hpp"
+#include "vescMotor.hpp"
+
 #include "com_config.h"
 #include "pid_controller.h"
 #include "topic_pool.h"
 #include "chassis_solution.hpp"
 #include "chassis_task.h"
+#include "math_utils.hpp"
 
 osThreadId_t Debug1_TaskHandle;
 
-
+extern C620Motor chassis_dirmotor1;
 
 void debug1Task(void *argument)
 {
@@ -36,8 +42,7 @@ void debug1Task(void *argument)
     for(;;)
     {
 
-
-        vTaskDelayUntil(&currentTime, 1);
+        vTaskDelayUntil(&currentTime, 5);
     }
 
 }

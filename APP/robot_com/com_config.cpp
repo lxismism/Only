@@ -16,11 +16,16 @@
 #include "usart.h"
 #include "fdcan.h"
 
-#include "topics.hpp"
 #include "memory_map.h"
 #include "UartPort.hpp"
+
 #include "Canbus.hpp"
-#include "Motor.hpp"
+#include "MotorBase.hpp"
+#include "djiMotor.hpp"
+#include "vescMotor.hpp"
+#include "dmMotor.hpp"
+
+#include "topics.hpp"
 #include "topic_pool.h"
 #include <array>
 #include "chassis_solution.hpp"
@@ -40,25 +45,25 @@ CanBus fdcan1_bus(hfdcan1);
 osThreadId_t can2Send_TaskHandle;
 CanBus fdcan2_bus(hfdcan2);
 
-VESCMotor chassis_drivemotor1(&fdcan2_bus, 101, MotorBase::PIDMode::SPEED, 
+VESCMotor chassis_drivemotor1(&fdcan1_bus, 101, MotorBase::PIDMode::SPEED, 
     VESCMotor::CAN_PACKET_SET_CURRENT, VESCMotor::CAN_PACKET_STATUS,
     21.0f, 1.0f, 20000.0f, 0.005f,
     1.5f, 0.5f, 0.0f, 20000.0f, 20000.0f,
     OutputFilter);
 
-VESCMotor chassis_drivemotor2(&fdcan2_bus, 102, MotorBase::PIDMode::SPEED, 
+VESCMotor chassis_drivemotor2(&fdcan1_bus, 102, MotorBase::PIDMode::SPEED, 
     VESCMotor::CAN_PACKET_SET_CURRENT,VESCMotor::CAN_PACKET_STATUS,
     21.0f,1.0f, 20000.0f, 0.005f,
     1.5f, 0.5f, 0.0f, 20000.0f, 20000.0f,
     OutputFilter);
 
-VESCMotor chassis_drivemotor3(&fdcan2_bus, 103, MotorBase::PIDMode::SPEED, 
+VESCMotor chassis_drivemotor3(&fdcan1_bus, 103, MotorBase::PIDMode::SPEED, 
     VESCMotor::CAN_PACKET_SET_CURRENT, VESCMotor::CAN_PACKET_STATUS,
     21.0f,1.0f, 20000.0f, 0.005f,
     1.5f, 0.5f, 0.0f, 20000.0f, 20000.0f,
     OutputFilter);
 
-VESCMotor chassis_drivemotor4(&fdcan2_bus, 104, MotorBase::PIDMode::SPEED, 
+VESCMotor chassis_drivemotor4(&fdcan1_bus, 104, MotorBase::PIDMode::SPEED, 
     VESCMotor::CAN_PACKET_SET_CURRENT, VESCMotor::CAN_PACKET_STATUS,
     21.0f,1.0f, 20000.0f, 0.005f,
     1.5f, 0.5f, 0.0f, 20000.0f, 20000.0f,
@@ -68,8 +73,42 @@ VESCMotor chassis_drivemotor4(&fdcan2_bus, 104, MotorBase::PIDMode::SPEED,
 
 std::array<MotorBase*, 4> chassis_drivemotors{&chassis_drivemotor1, &chassis_drivemotor2,
                                               &chassis_drivemotor3, &chassis_drivemotor4};
+
+
+C620Motor chassis_dirmotor1(&fdcan1_bus, 0x201, false, 0x200, false, 
+    MotorBase::PIDMode::DEGREE, 8.0f,20000.0f, 0.005f,
+    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
+    OutputFilter,
+    5.0f);
+
+C620Motor chassis_dirmotor2(&fdcan1_bus, 0x202, false, 0x200, false, 
+    MotorBase::PIDMode::DEGREE, 8.0f,20000.0f, 0.005f,
+    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
+    OutputFilter,
+    5.0f);
+
+C620Motor chassis_dirmotor3(&fdcan1_bus, 0x203, false, 0x200, false, 
+    MotorBase::PIDMode::DEGREE, 8.0f,20000.0f, 0.005f,
+    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
+    OutputFilter,
+    5.0f);
+
+C620Motor chassis_dirmotor4(&fdcan1_bus, 0x204, false, 0x200, false, 
+    MotorBase::PIDMode::DEGREE, 8.0f,20000.0f, 0.005f,
+    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
+    OutputFilter,
+    5.0f);
+
+std::array<MotorBase*, 4> chassis_dirmotors{&chassis_dirmotor1, &chassis_dirmotor2,
+                                            &chassis_dirmotor3, &chassis_dirmotor4};
+                                            
 /*-------------------------------------fdcan2----------------------------------------*/
 
+C610Motor extend_motor(&fdcan2_bus, 0x202, false, 0x200, false, 
+    MotorBase::PIDMode::DEGREE, 36.0f,10000.0f, 0.005f,
+    16.0f, 5.0f, 0.0f, 10000.0f, 10000.0f,
+    OutputFilter,
+    5.0f);
 
 
 /*-------------------------------------fdcan3----------------------------------------*/
@@ -80,32 +119,6 @@ osThreadId_t can3Send_TaskHandle;
 
 CanBus fdcan3_bus(hfdcan3);
 
-C620Motor chassis_dirmotor1(&fdcan3_bus, 0x201, false, 0x200, false, 
-    MotorBase::PIDMode::DEGREE, 3591.0f / 187.0f,20000.0f, 0.005f,
-    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter,
-    5.0f);
-
-C620Motor chassis_dirmotor2(&fdcan3_bus, 0x202, false, 0x200, false, 
-    MotorBase::PIDMode::DEGREE, 3591.0f / 187.0f,20000.0f, 0.005f,
-    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter,
-    5.0f);
-
-C620Motor chassis_dirmotor3(&fdcan3_bus, 0x203, false, 0x200, false, 
-    MotorBase::PIDMode::DEGREE, 3591.0f / 187.0f,20000.0f, 0.005f,
-    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter,
-    5.0f);
-
-C620Motor chassis_dirmotor4(&fdcan3_bus, 0x204, false, 0x200, false, 
-    MotorBase::PIDMode::DEGREE, 3591.0f / 187.0f,20000.0f, 0.005f,
-    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter,
-    5.0f);
-
-std::array<MotorBase*, 4> chassis_dirmotors{&chassis_dirmotor1, &chassis_dirmotor2,
-                                            &chassis_dirmotor3, &chassis_dirmotor4};
 
 /*-------------------------------------fdcan3----------------------------------------*/
 
@@ -129,12 +142,12 @@ osSemaphoreId_t uart3_rx_semaphore = NULL;
 
 uint8_t comServiceInit(){
 
-    canFilterInit(&hfdcan1, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO0, 0);
+    canFilterInit(&hfdcan1, FDCAN_EXTENDED_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO0, 0);
     canFilterInit(&hfdcan1, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO1, 1);
     bspCanInit(&hfdcan1);
 
-    canFilterInit(&hfdcan2, FDCAN_EXTENDED_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO0, 0);
-    canFilterInit(&hfdcan2, FDCAN_EXTENDED_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO1, 1);
+    canFilterInit(&hfdcan2, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO0, 0);
+    canFilterInit(&hfdcan2, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO1, 1);
     bspCanInit(&hfdcan2);
 
     canFilterInit(&hfdcan3, FDCAN_STANDARD_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO0, 0);
@@ -145,16 +158,17 @@ uint8_t comServiceInit(){
     fdcan2_bus.init();
     fdcan3_bus.init();
 
-    fdcan2_bus.registerDevice(&chassis_drivemotor1);
-    fdcan2_bus.registerDevice(&chassis_drivemotor2);
-    fdcan2_bus.registerDevice(&chassis_drivemotor3);
-    fdcan2_bus.registerDevice(&chassis_drivemotor4);
+    fdcan1_bus.registerDevice(&chassis_drivemotor1);
+    fdcan1_bus.registerDevice(&chassis_drivemotor2);
+    fdcan1_bus.registerDevice(&chassis_drivemotor3);
+    fdcan1_bus.registerDevice(&chassis_drivemotor4);
 
-    fdcan3_bus.registerDevice(&chassis_dirmotor1);
-    fdcan3_bus.registerDevice(&chassis_dirmotor2);
-    fdcan3_bus.registerDevice(&chassis_dirmotor3);
-    fdcan3_bus.registerDevice(&chassis_dirmotor4);
+    fdcan1_bus.registerDevice(&chassis_dirmotor1);
+    fdcan1_bus.registerDevice(&chassis_dirmotor2);
+    fdcan1_bus.registerDevice(&chassis_dirmotor3);
+    fdcan1_bus.registerDevice(&chassis_dirmotor4); 
     
+    fdcan2_bus.registerDevice(&extend_motor);
 
 
     uart3_rx_semaphore = osSemaphoreNew(1, 0, NULL);
@@ -196,21 +210,29 @@ void can1SendTask(void *argument){
     TickType_t current = xTaskGetTickCount();
 
     for(;;){        
+        chassis_dirmotor1.pidUpdate();
+        chassis_dirmotor2.pidUpdate();
+        chassis_dirmotor3.pidUpdate();
+        chassis_dirmotor4.pidUpdate();
 
+        uint8_t data[8] = {0};
+        CanBus::ClassicPack pack = {};
 
-        vTaskDelayUntil(&current, 1);
-    }
-}
-/*-------------------------------------fdcan1----------------------------------------*/
+        uint32_t motor_ids[4] = {0x201, 0x202, 0x203 ,0x204};
+        int16_t commands[4] = {
+            static_cast<int16_t>(chassis_dirmotor1.cmdTrans()),
+            static_cast<int16_t>(chassis_dirmotor2.cmdTrans()),
+            static_cast<int16_t>(chassis_dirmotor3.cmdTrans()),
+            static_cast<int16_t>(chassis_dirmotor4.cmdTrans())
+        };
 
+        packDJIMotorCanMsg(0x200, motor_ids, commands, 4U, data);
 
-/*-------------------------------------fdcan2----------------------------------------*/
-
-void can2SendTask(void *argument){
-    TickType_t current = xTaskGetTickCount();
-
-    for(;;){        
-
+        pack.id = 0x200;
+        pack.type = CanBus::Type::STANDARD;
+        pack.dlc = FDCAN_DLC_BYTES_8;
+        for(uint8_t i = 0; i < 8; ++i) pack.data[i] = data[i];
+        fdcan1_bus.addCanMsg(pack);
         
         {
             chassis_drivemotor1.pidUpdate();
@@ -222,7 +244,7 @@ void can2SendTask(void *argument){
 
             chassis_drivemotor1.buildTx(pack.data);
 
-            fdcan2_bus.addCanMsg(pack);
+            fdcan1_bus.addCanMsg(pack);
         }
         // vTaskDelayUntil(&current, 1);
 
@@ -236,7 +258,7 @@ void can2SendTask(void *argument){
 
             chassis_drivemotor2.buildTx(pack.data);
 
-            fdcan2_bus.addCanMsg(pack);
+            fdcan1_bus.addCanMsg(pack);
         }
         // vTaskDelayUntil(&current, 1);
 
@@ -250,7 +272,7 @@ void can2SendTask(void *argument){
 
             chassis_drivemotor3.buildTx(pack.data);
 
-            fdcan2_bus.addCanMsg(pack);
+            fdcan1_bus.addCanMsg(pack);
         }
         // vTaskDelayUntil(&current, 1);
 
@@ -264,8 +286,34 @@ void can2SendTask(void *argument){
 
             chassis_drivemotor4.buildTx(pack.data);
 
-            fdcan2_bus.addCanMsg(pack);
+            fdcan1_bus.addCanMsg(pack);
         }
+
+        vTaskDelayUntil(&current, 1);
+    }
+}
+/*-------------------------------------fdcan1----------------------------------------*/
+
+
+/*-------------------------------------fdcan2----------------------------------------*/
+
+void can2SendTask(void *argument){
+    TickType_t current = xTaskGetTickCount();
+
+    for(;;){        
+        extend_motor.pidUpdate();
+
+        uint8_t data[8]{};
+        uint32_t motor_ids[4] = {0, 0x202, 0, 0};
+        int16_t commands[4] = {0, static_cast<int16_t>(extend_motor.cmdTrans()), 0, 0};
+        CanBus::ClassicPack pack{};
+        pack.type = CanBus::Type::STANDARD;
+        pack.dlc = FDCAN_DLC_BYTES_8;
+        pack.id = 0x200;
+        packDJIMotorCanMsg(pack.id, motor_ids, commands, 4, data);
+        for(uint8_t i = 0; i < 8U; ++i) pack.data[i] = data[i]; 
+
+        fdcan2_bus.addCanMsg(pack);
 
         vTaskDelayUntil(&current, 1);
     }
@@ -279,28 +327,9 @@ void can3SendTask(void *argument){
     TickType_t current = xTaskGetTickCount();
 
     for(;;){
-        chassis_dirmotor1.pidUpdate();
-        chassis_dirmotor2.pidUpdate();
-        chassis_dirmotor3.pidUpdate();
-        chassis_dirmotor4.pidUpdate();
 
-        uint8_t data[8] = {0};
-        CanBus::ClassicPack pack = {};
-
-        uint8_t len = 0U;
-
-        uint32_t motor_ids[4] = {0, 0x202, 0 ,0};
-        int16_t commands[4] = {0, static_cast<int16_t>(chassis_dirmotor1.cmdTrans()), 0, 0};
-
-        packDJIMotorCanMsg(0x200, motor_ids, commands, 4U, data, len);
-
-        pack.id = 0x200;
-        pack.type = CanBus::Type::STANDARD;
-        pack.dlc = FDCAN_DLC_BYTES_8;
-        for(uint8_t i = 0; i < 8; ++i) pack.data[i] = data[i];
-        fdcan3_bus.addCanMsg(pack);
             
-        vTaskDelayUntil(&current, 1);
+        vTaskDelayUntil(&current, 5);
         
     }
 
