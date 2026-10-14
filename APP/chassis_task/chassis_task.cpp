@@ -11,6 +11,9 @@
 #include "chassis_task.h"
 #include "chassis_solution.hpp"
 #include "MotorBase.hpp"
+#include "djiMotor.hpp"
+#include "vescMotor.hpp"
+
 #include "com_config.h"
 
 osThreadId_t Chassis_TaskHandle;
@@ -24,12 +27,12 @@ bool flag = false;
 void chassisTask(void *argument){
     
     TickType_t current = xTaskGetTickCount();
-
+    vTaskDelayUntil(&current, 20);
     for(;;)
     {
-        if(flag){
-            SteerChassis_solver.run(chassis_cmd_sub);
-        }
+
+        SteerChassis_solver.run(chassis_cmd_sub);
+        
         vTaskDelayUntil(&current, 1);
     }
 }

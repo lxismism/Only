@@ -14,22 +14,6 @@
 
 static void f_Output_Filter(PID_t *pid);
 
-void PID_Init(PID_t *pid)
-{
-    pid->Measure = 0.0f;
-    pid->Ref = 0.0f;
-    pid->Err = 0.0f;
-    pid->Last_Err = 0.0f;
-
-    pid->ITerm = 0.0f;
-    pid->Pout = 0.0f;
-    pid->Iout = 0.0f;
-    pid->Dout = 0.0f;
-    pid->Output = 0.0f;
-
-    pid->DWT_CNT = 0;
-    pid->dt = 0.0f;
-}
 
 float PID_Calculate(PID_t *pid, float measure, float ref)
 {
@@ -41,6 +25,11 @@ float PID_Calculate(PID_t *pid, float measure, float ref)
 
     pid->Err = pid->Ref - pid->Measure;
 
+    const uint8_t in_deadband = (pid->Err < pid->DeadBand && pid->Err > -pid->DeadBand) ? 1 : 0;
+    if(in_deadband){
+        pid->Err = 0.0f;
+    }
+
     //比例项
     pid->Pout = pid->Kp * pid->Err;
 
@@ -51,7 +40,11 @@ float PID_Calculate(PID_t *pid, float measure, float ref)
     pid->Iout = pid->ITerm;
 
     //微分项
-    pid->Dout = pid->Kd * (pid->Err - pid->Last_Err) / pid->dt;
+    if(in_deadband){
+        pid->Dout = 0.0f;
+    } else {
+        pid->Dout = pid->Kd * (pid->Err - pid->Last_Err) / pid->dt;
+    }
 
     pid->Output = pid->Pout + pid->Iout + pid->Dout;
 

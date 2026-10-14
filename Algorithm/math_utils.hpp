@@ -10,8 +10,9 @@
  */
 #pragma once
 #include <cmath>
-
 namespace math_utils {
+static constexpr float kPI = 3.1415926535897f;
+
 
 inline float Clamp(float val, float min, float max){
     return (val >= max)? max : ((val <= min)? min : val);
