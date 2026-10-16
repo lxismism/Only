@@ -23,6 +23,7 @@
 
 extern osThreadId_t Debug1_TaskHandle;
 extern osThreadId_t Debug2_TaskHandle;
+extern osThreadId_t uart2Process_TaskHandle;
 extern osThreadId_t uart3Process_TaskHandle;
 extern osThreadId_t can1Send_TaskHandle;
 extern osThreadId_t can2Send_TaskHandle;
@@ -45,6 +46,14 @@ void osTaskInit(void)
         .priority = (osPriority_t)osPriorityNormal,
     };
     uart3Process_TaskHandle = osThreadNew(uart3RxProcessTask, NULL, &uart3ProcessTaskHandle_attributes);
+
+    const osThreadAttr_t uart2ProcessTaskHandle_attributes = {
+        .name = "uart2Process_TaskHandle",
+        .stack_size = 256 * 4,
+        .priority = (osPriority_t)osPriorityNormal,
+    };
+    uart2Process_TaskHandle = osThreadNew(uart2RxProcessTask, NULL, &uart2ProcessTaskHandle_attributes);
+
 
     const osThreadAttr_t Debug2TaskHandle_attributes = {
         .name = "Debug2_TaskHandle",

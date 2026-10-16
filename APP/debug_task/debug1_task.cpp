@@ -32,7 +32,8 @@
 
 osThreadId_t Debug1_TaskHandle;
 
-extern C620Motor chassis_dirmotor1;
+static TypedTopicSubscriber<pub_imu_data> imu_data_sub("imu_data", 8U);
+static pub_imu_data imu_data{};
 
 void debug1Task(void *argument)
 {
@@ -41,6 +42,7 @@ void debug1Task(void *argument)
 
     for(;;)
     {
+        imu_data_sub.TryGet(&imu_data);
 
         vTaskDelayUntil(&currentTime, 5);
     }
