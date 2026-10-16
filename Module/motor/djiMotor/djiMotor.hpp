@@ -15,6 +15,7 @@
 
 #include "MotorBase.hpp"
 #include "CanBus.hpp"
+#include "pid_controller.h"
 
 class C610Motor : public CanDevice , public MotorBase {
 public:
@@ -92,6 +93,8 @@ public:
             if(output_type_ == OutputType::DEGREE ) pidDegUpdate();
             if(output_type_ != OutputType::NONE) pidDegSpeedUpdate();
             //目前只做了串级pid
+        } else {
+            resetPids();
         }
     }
 
@@ -188,6 +191,8 @@ public:
             if(output_type_ == OutputType::DEGREE ) pidDegUpdate();
             if(output_type_ != OutputType::NONE) pidDegSpeedUpdate();
             //目前只做了串级pid
+        } else {
+            resetPids();
         }
     }
 private:

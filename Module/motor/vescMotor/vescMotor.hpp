@@ -1,6 +1,6 @@
 /**
  * @file vescMotor.hpp
- * @author your name (you@domain.com)
+ * @author lxlx (1729649497@qq.com)
  * @brief 
  * @version 0.1
  * @date 2026-10-10
@@ -128,6 +128,8 @@ public:
             if(output_type_ == OutputType::DEGREE ) pidDegUpdate();
             if(output_type_ != OutputType::NONE) pidDegSpeedUpdate();
             //目前只做了串级pid
+        } else {
+            resetPids();
         }
     }
 

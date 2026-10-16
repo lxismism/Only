@@ -26,6 +26,8 @@
 #include "vescMotor.hpp"
 #include "dmMotor.hpp"
 
+#include "photo_gate.hpp"
+
 #include "topics.hpp"
 #include "topic_pool.h"
 #include <array>
@@ -126,6 +128,12 @@ C610Motor extend_motor(&fdcan3_bus, 0x202, false, 0x200, false,
     5.0f);
 
 
+C620Motor lift_motor(&fdcan3_bus, 0x201, false, 0x200, false, 
+    MotorBase::OutputType::SPEED, 3591.0f / 187.0f,20000.0f, 0.0f,
+    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
+    NONE, 0.1f,
+    5.0f);
+
 /*-------------------------------------fdcan3----------------------------------------*/
 
 
@@ -196,6 +204,7 @@ uint8_t comServiceInit(){
     
     fdcan3_bus.registerDevice(&extend_motor);
     fdcan3_bus.registerDevice(&wrist_motor);
+    fdcan3_bus.registerDevice(&lift_motor);
 
     uart2_rx_semaphore = osSemaphoreNew(1, 0, NULL);
     uart2_port.startRxDmaIdle();
@@ -378,10 +387,12 @@ void can3SendTask(void *argument){
 
         {   
             extend_motor.update();
+            lift_motor.update();
 
             uint8_t data[8]{};
-            uint32_t motor_ids[4] = {0, 0x202, 0, 0};
-            int16_t commands[4] = {0, static_cast<int16_t>(extend_motor.cmdTrans()), 0, 0};
+            uint32_t motor_ids[4] = {0x201, 0x202, 0, 0};
+            int16_t commands[4] = {static_cast<int16_t>(lift_motor.cmdTrans()),
+                                   static_cast<int16_t>(extend_motor.cmdTrans()), 0, 0};
             CanBus::ClassicPack pack{};
             pack.type = CanBus::Type::STANDARD;
             pack.dlc = FDCAN_DLC_BYTES_8;
@@ -402,7 +413,7 @@ void can3SendTask(void *argument){
             }
         }
 
-        vTaskDelayUntil(&current, 5);
+        vTaskDelayUntil(&current, 1);
         
     }
 
