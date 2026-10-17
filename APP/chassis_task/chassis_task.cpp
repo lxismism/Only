@@ -22,7 +22,6 @@ extern std::array<MotorBase*, 4> chassis_dirmotors;
 extern std::array<MotorBase*, 4> chassis_drivemotors;
 SteerChassis SteerChassis_solver(chassis_dirmotors, chassis_drivemotors);
 static pub_chassis_cmd chassis_cmd_sub{};
-bool flag = false;
 
 void chassisTask(void *argument){
     
@@ -31,7 +30,7 @@ void chassisTask(void *argument){
     for(;;)
     {
 
-        SteerChassis_solver.run(chassis_cmd_sub);
+        //SteerChassis_solver.run(chassis_cmd_sub);
         
         vTaskDelayUntil(&current, 1);
     }

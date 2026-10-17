@@ -26,8 +26,6 @@
 #include "vescMotor.hpp"
 #include "dmMotor.hpp"
 
-#include "photo_gate.hpp"
-
 #include "topics.hpp"
 #include "topic_pool.h"
 #include <array>
@@ -46,25 +44,25 @@ VESCMotor chassis_drivemotor1(&fdcan1_bus, 101, MotorBase::OutputType::SPEED,
     VESCMotor::CAN_PACKET_SET_CURRENT, VESCMotor::CAN_PACKET_STATUS,
     21.0f, 1.0f, 20000.0f, 0.005f,
     1.5f, 0.5f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter, 0.1f);
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT, 0.1f);
 
 VESCMotor chassis_drivemotor2(&fdcan1_bus, 102, MotorBase::OutputType::SPEED, 
     VESCMotor::CAN_PACKET_SET_CURRENT,VESCMotor::CAN_PACKET_STATUS,
     21.0f,1.0f, 20000.0f, 0.005f,
     1.5f, 0.5f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter, 0.1f);
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT, 0.1f);
 
 VESCMotor chassis_drivemotor3(&fdcan1_bus, 103, MotorBase::OutputType::SPEED, 
     VESCMotor::CAN_PACKET_SET_CURRENT, VESCMotor::CAN_PACKET_STATUS,
     21.0f,1.0f, 20000.0f, 0.005f,
     1.5f, 0.5f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter, 0.1f);
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT, 0.1f);
 
 VESCMotor chassis_drivemotor4(&fdcan1_bus, 104, MotorBase::OutputType::SPEED, 
     VESCMotor::CAN_PACKET_SET_CURRENT, VESCMotor::CAN_PACKET_STATUS,
     21.0f,1.0f, 20000.0f, 0.005f,
     1.5f, 0.5f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter, 0.1f);
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT, 0.1f);
 
 
 
@@ -80,28 +78,32 @@ std::array<MotorBase*, 4> chassis_drivemotors{&chassis_drivemotor1, &chassis_dri
 /*-------------------------------------fdcan2----------------------------------------*/
 
 C620Motor chassis_dirmotor1(&fdcan2_bus, 0x201, false, 0x200, false, 
-    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.005f,
-    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter, 0.1f,
-    5.0f);
+    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
+    400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
+    Derivative_On_Measurement, 1.0f);
 
 C620Motor chassis_dirmotor2(&fdcan2_bus, 0x202, false, 0x200, false, 
-    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.005f,
-    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter, 0.1f,
-    5.0f);
+    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
+    400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
+    Derivative_On_Measurement, 1.0f);
 
 C620Motor chassis_dirmotor3(&fdcan2_bus, 0x203, false, 0x200, false, 
-    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.005f,
-    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter, 0.1f,
-    5.0f);
+    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
+    400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
+    Derivative_On_Measurement, 1.0f);
 
 C620Motor chassis_dirmotor4(&fdcan2_bus, 0x204, false, 0x200, false, 
-    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.005f,
-    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
-    OutputFilter, 0.1f,
-    5.0f);
+    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
+    400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
+    Derivative_On_Measurement, 1.0f);
 
 std::array<MotorBase*, 4> chassis_dirmotors{&chassis_dirmotor1, &chassis_dirmotor2,
                                             &chassis_dirmotor3, &chassis_dirmotor4};
@@ -124,15 +126,16 @@ DM4310Motor wrist_motor(&fdcan3_bus, 0x06, 0x06, DM4310Motor::PosWithSpeed);
 C610Motor extend_motor(&fdcan3_bus, 0x202, false, 0x200, false, 
     MotorBase::OutputType::DEGREE, 36.0f,10000.0f, 0.005f,
     16.0f, 5.0f, 0.0f, 10000.0f, 10000.0f,
-    OutputFilter, 0.1f,
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT, 0.1f,
     5.0f);
 
 
 C620Motor lift_motor(&fdcan3_bus, 0x201, false, 0x200, false, 
-    MotorBase::OutputType::SPEED, 3591.0f / 187.0f,20000.0f, 0.0f,
-    16.0f, 5.0f, 0.0f, 20000.0f, 20000.0f,
-    NONE, 0.1f,
-    5.0f);
+    MotorBase::OutputType::DEGREE, 3591.0f / 187.0f,20000.0f, 0.01f,
+    400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
+    Derivative_On_Measurement, 1.0f);
 
 /*-------------------------------------fdcan3----------------------------------------*/
 
