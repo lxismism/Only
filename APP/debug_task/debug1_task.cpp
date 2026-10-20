@@ -29,6 +29,7 @@
 #include "chassis_solution.hpp"
 #include "chassis_task.h"
 #include "math_utils.hpp"
+#include "photogate.hpp"
 
 osThreadId_t Debug1_TaskHandle;
 

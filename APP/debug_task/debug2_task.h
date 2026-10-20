@@ -18,6 +18,7 @@ extern "C"{
 
 void debug2Task(void *argument);
 
+void printSteersCurse(void);
 
 #ifdef __cplusplus
 }
