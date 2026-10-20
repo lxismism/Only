@@ -13,6 +13,7 @@
 #include "FreeRTOS.h"
 #include "cmsis_os2.h"
 #include "task.h"
+#include "gpio.h"
 #include "usart.h"
 #include "fdcan.h"
 
@@ -30,6 +31,17 @@
 #include "topic_pool.h"
 #include <array>
 #include "chassis_solution.hpp"
+
+/*-------------------------------------gpio----------------------------------------*/
+PhotoGate chassis_photogate1(PHOTOGATE1_GPIO_Port, PHOTOGATE1_Pin);
+PhotoGate chassis_photogate2(PHOTOGATE2_GPIO_Port, PHOTOGATE2_Pin);
+PhotoGate chassis_photogate3(PHOTOGATE3_GPIO_Port, PHOTOGATE3_Pin);
+PhotoGate chassis_photogate4(PHOTOGATE4_GPIO_Port, PHOTOGATE4_Pin);
+std::array<PhotoGate*, kWheelNum> chassis_photogates
+    {&chassis_photogate1, &chassis_photogate2,
+     &chassis_photogate3, &chassis_photogate4};
+/*-------------------------------------gpio----------------------------------------*/
+
 
 /*-------------------------------------fdcan1----------------------------------------*/
 

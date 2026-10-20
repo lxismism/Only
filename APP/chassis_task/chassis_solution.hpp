@@ -2,6 +2,11 @@
  * @file chassis_solution.hpp
  * @author lxlx (1729649497@qq.com)
  * @brief 
+    底盘解算的四个舵轮布局如下：
+            1    0   
+
+            2    3
+
  * @version 0.1
  * @date 2026-10-07
  * 
@@ -10,14 +15,20 @@
  */
 #pragma once
 
+#include "gpio.h"
+
 #include "MotorBase.hpp"
 #include "CanBus.hpp"
 #include "djiMotor.hpp"
 #include "vescMotor.hpp"
 
+#include "photogate.hpp"
+
 #include "topic_pool.h"
 #include <cmath>
 #include <array>
+
+static constexpr uint8_t kWheelNum = 4U;        //轮数
 
 struct Velocity_t{
     float dir;
@@ -25,18 +36,13 @@ struct Velocity_t{
 };
 
 class SteerWheel{
-    /*
-        1    0   
-
-        2    3
-    */
-
 public:
     SteerWheel() = default;
 
-    void init(MotorBase* dirmotor, MotorBase* drivemotor){
+    void init(MotorBase* dirmotor, MotorBase* drivemotor, PhotoGate* photogate){
         dirmotor_ = dirmotor;
         drivemotor_ = drivemotor;
+        photogate_ = photogate;
     }
 
     void setVelocity(Velocity_t target_velocity){
@@ -94,6 +100,7 @@ private:
 
     MotorBase* dirmotor_{};
     MotorBase* drivemotor_{};
+    PhotoGate* photogate_{};
 
     Velocity_t current_velocity_{};
     Velocity_t last_velocity_{};
@@ -114,13 +121,19 @@ private:
 };
 
 class SteerChassis{
-public:
-    static constexpr uint8_t kWheelNum = 4U;        //轮数
+    
+    /*
+        1    0   
 
+        2    3
+    */
+
+public:
     SteerChassis(const std::array<MotorBase* , kWheelNum> &dirmotors,
-                 const std::array<MotorBase* , kWheelNum> &drivemotors){
+                 const std::array<MotorBase* , kWheelNum> &drivemotors,
+                 const std::array<PhotoGate* , kWheelNum> &photogates){
         for(uint8_t i = 0; i < kWheelNum; ++i){
-            steerwheels_[i].init(dirmotors[i], drivemotors[i]);
+            steerwheels_[i].init(dirmotors[i], drivemotors[i], photogates[i]);
         }
     }
 

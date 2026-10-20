@@ -16,18 +16,20 @@ public:
     PhotoGate(GPIO_TypeDef* GPIO_Port, uint16_t GPIO_Pin)
         : gpio_port_(GPIO_Port), gpio_pin_(GPIO_Pin){}
 
-    bool is_blocked(){ return state_; }
+    bool isBlocked(){ return state_; }
+
+    bool hasRisingEdge(){ return ((!last_state_) && state_); }
+    bool hasFallingEdge(){ return (last_state_ && (!state_)); }
     
     void update(){
-        state_ = 
-        (HAL_GPIO_ReadPin(gpio_port_, gpio_pin_) == GPIO_PIN_RESET)
-        ? false
-        : true;
+        last_state_ = state_;
+        state_ = (HAL_GPIO_ReadPin(gpio_port_, gpio_pin_) == GPIO_PIN_RESET);
     }
 
 
 private:
-    bool state_{false};
+    bool state_{false};     //无遮挡是0，有遮挡是1
+    bool last_state_{false};
     GPIO_TypeDef* gpio_port_;
     uint16_t gpio_pin_;
 
