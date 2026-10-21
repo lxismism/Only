@@ -88,30 +88,30 @@ osThreadId_t can2Send_TaskHandle;
 CanBus fdcan2_bus(hfdcan2);
 
 C620Motor chassis_dirmotor1(&fdcan2_bus, 0x201, false, 0x200, false, 
-    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
-    400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
-    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f, 20000.0f,
+    400.0f, 5000.0f, 0.0f, 20000.0f, 
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, false,0.1f,
     20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
     Derivative_On_Measurement, 1.0f);
 
 C620Motor chassis_dirmotor2(&fdcan2_bus, 0x202, false, 0x200, false, 
-    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
-    400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
-    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f, 20000.0f,
+    400.0f, 5000.0f, 0.0f, 20000.0f,
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, false,0.1f,
     20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
     Derivative_On_Measurement, 1.0f);
 
 C620Motor chassis_dirmotor3(&fdcan2_bus, 0x203, false, 0x200, false, 
     MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
-    400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
-    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    400.0f, 5000.0f, 0.0f, 20000.0f, 
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, false,0.1f,
     20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
     Derivative_On_Measurement, 1.0f);
 
 C620Motor chassis_dirmotor4(&fdcan2_bus, 0x204, false, 0x200, false, 
-    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
+    MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f, 
     400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
-    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, false,0.1f,
     20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
     Derivative_On_Measurement, 1.0f);
 
@@ -141,9 +141,10 @@ C610Motor extend_motor(&fdcan3_bus, 0x202, false, 0x200, false,
 
 
 C620Motor lift_motor(&fdcan3_bus, 0x201, false, 0x200, false, 
-    MotorBase::OutputType::DEGREE, 3591.0f / 187.0f,20000.0f, 0.01f,
-    400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
-    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    MotorBase::OutputType::SPEED, 3591.0f / 187.0f,20000.0f, 0.01f, 
+    400.0f, 5000.0f, 0.0f,20000.0f, 20000.0f,
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 1.0f,
+    true, 50000.0f,
     20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
     Derivative_On_Measurement, 1.0f);
 

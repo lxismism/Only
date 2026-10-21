@@ -125,11 +125,20 @@ public:
     
     void update(void){
         if(!isOffline()){
+
             if(output_type_ == OutputType::DEGREE ) pidDegUpdate();
+
+            if(use_speed_planner_){
+                ramp_deg_speed_ = speed_planner_.update(ref_deg_speed_, deg_accel_);
+            } else{
+                ramp_deg_speed_ = ref_deg_speed_;
+            }
+            
             if(output_type_ != OutputType::NONE) pidDegSpeedUpdate();
             //目前只做了串级pid
         } else {
             resetPids();
+            speed_planner_.reset();
         }
     }
 

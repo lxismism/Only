@@ -90,14 +90,22 @@ public:
 
     void update(void){
         if(!isOffline()){
+
             if(output_type_ == OutputType::DEGREE ) pidDegUpdate();
+
+            if(use_speed_planner_){
+                ramp_deg_speed_ = speed_planner_.update(ref_deg_speed_, deg_accel_);
+            } else{
+                ramp_deg_speed_ = ref_deg_speed_;
+            }
+            
             if(output_type_ != OutputType::NONE) pidDegSpeedUpdate();
             //目前只做了串级pid
         } else {
             resetPids();
+            speed_planner_.reset();
         }
     }
-
 private:
     static constexpr float kCurToTorque = 0.18f;
 
@@ -113,7 +121,7 @@ public:
     C620Motor(CanBus *manager, uint32_t id, bool is_extid, uint32_t tx_id, bool tx_is_extid, const OutputType output_type,
               float reduction = 3591.0f / 187.0f, float max_cmd = 20000.0f, float output_filter_rc = 0.0f,
               float speed_kp=0.0f, float speed_ki=0.0f, float speed_kd=0.0f, float speed_max_out = 20000.0f, float speed_max_IL = 20000.0f,
-              uint16_t pid_speed_improve = NONE, float speed_deadband = 0.001f,
+              uint16_t pid_speed_improve = NONE, float speed_deadband = 0.001f, bool use_speed_planner = false, float deg_jerk = 20000.0f,
               float deg_kp=0.0f, float deg_ki=0.0f, float deg_kd=0.0f, float max_deg=5000.0f, float deg_max_IL=5000.0f,
               uint16_t pid_deg_improve = NONE, float deg_deadband = 0.001f)
               : CanDevice(manager, id, is_extid, tx_id, tx_is_extid){
@@ -142,6 +150,9 @@ public:
                 deg_pid_.Output_LPF_RC = output_filter_rc;
                 deg_pid_.Improve = pid_deg_improve;
                 deg_pid_.DeadBand = deg_deadband;
+
+                speed_planner_.init(deg_jerk);
+                use_speed_planner_ = use_speed_planner;
             }
 
 
@@ -185,14 +196,23 @@ public:
     }
 
     float cmdTrans() { return cmd_ * 16384.0f / 20000.0f;}
-
+    
     void update(void){
         if(!isOffline()){
+
             if(output_type_ == OutputType::DEGREE ) pidDegUpdate();
+
+            if(use_speed_planner_){
+                ramp_deg_speed_ = speed_planner_.update(ref_deg_speed_, deg_accel_);
+            } else{
+                ramp_deg_speed_ = ref_deg_speed_;
+            }
+            
             if(output_type_ != OutputType::NONE) pidDegSpeedUpdate();
             //目前只做了串级pid
         } else {
             resetPids();
+            speed_planner_.reset();
         }
     }
 private:
