@@ -22,14 +22,22 @@ public:
     bool hasFallingEdge(){ return (last_state_ && (!state_)); }
     
     void update(){
-        last_state_ = state_;
-        state_ = (HAL_GPIO_ReadPin(gpio_port_, gpio_pin_) == GPIO_PIN_RESET);
+        if(is_first_frame_){
+
+            state_ = (HAL_GPIO_ReadPin(gpio_port_, gpio_pin_) == GPIO_PIN_RESET);
+            last_state_ = state_;
+            is_first_frame_ = false;
+        } else {
+            last_state_ = state_;
+            state_ = (HAL_GPIO_ReadPin(gpio_port_, gpio_pin_) == GPIO_PIN_RESET);
+        }
     }
 
 
 private:
     bool state_{false};     //无遮挡是0，有遮挡是1
     bool last_state_{false};
+    bool is_first_frame_{true};
     GPIO_TypeDef* gpio_port_;
     uint16_t gpio_pin_;
 

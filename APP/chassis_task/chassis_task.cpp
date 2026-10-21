@@ -20,18 +20,22 @@ osThreadId_t Chassis_TaskHandle;
 
 extern std::array<MotorBase*, kWheelNum> chassis_dirmotors;
 extern std::array<MotorBase*, kWheelNum> chassis_drivemotors;
-extern std::array<PhotoGate*, kWheelNum> chassis_photogates;
-SteerChassis SteerChassis_solver(chassis_dirmotors, chassis_drivemotors, chassis_photogates);
+SteerChassis SteerChassis_solver(chassis_dirmotors, chassis_drivemotors);
 static pub_chassis_cmd chassis_cmd_sub{};
 
 void chassisTask(void *argument){
     
     TickType_t current = xTaskGetTickCount();
-    vTaskDelayUntil(&current, 20);
+    vTaskDelayUntil(&current, 500);
     for(;;)
     {
 
-        //SteerChassis_solver.run(chassis_cmd_sub);
+        if(!SteerChassis_solver.HasHoming()){
+            SteerChassis_solver.homing();
+        } else{
+            SteerChassis_solver.run(chassis_cmd_sub);
+        }
+
         
         vTaskDelayUntil(&current, 1);
     }
