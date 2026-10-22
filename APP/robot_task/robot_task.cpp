@@ -17,6 +17,7 @@
 #include "debug2_task.h"
 #include "com_config.h"
 #include "chassis_task.h"
+#include "pickhand_task.h"
 
 
 
@@ -29,6 +30,7 @@ extern osThreadId_t can1Send_TaskHandle;
 extern osThreadId_t can2Send_TaskHandle;
 extern osThreadId_t can3Send_TaskHandle;
 extern osThreadId_t Chassis_TaskHandle;
+extern osThreadId_t pickHand_TaskHandle;
 
 
 void osTaskInit(void)
@@ -90,5 +92,10 @@ void osTaskInit(void)
     };
     Chassis_TaskHandle = osThreadNew(chassisTask, NULL, &chassisTaskHandle_attributes);
 
-    
+    const osThreadAttr_t pickHandTaskHandle_attributes = {
+        .name = "pickHand_TaskHandle",
+        .stack_size = 256 * 4,
+        .priority = (osPriority_t)osPriorityRealtime,
+    };
+    pickHand_TaskHandle = osThreadNew(pickHandTask, NULL, &pickHandTaskHandle_attributes);
 }

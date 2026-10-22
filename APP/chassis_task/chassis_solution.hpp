@@ -260,7 +260,7 @@ public:
                                      (vy + omega * kx) * (vy + omega * kx));
         velocitys_[1].speed = -std::sqrt((vx - omega * ky) * (vx - omega * ky) + 
                                      (vy - omega * kx) * (vy - omega * kx));
-        velocitys_[2].speed = std::sqrt((vx + omega * ky) * (vx + omega * ky) + 
+        velocitys_[2].speed = -std::sqrt((vx + omega * ky) * (vx + omega * ky) + 
                                      (vy - omega * kx) * (vy - omega * kx));
         velocitys_[3].speed = -std::sqrt((vx + omega * ky) * (vx + omega * ky) + 
                                      (vy + omega * kx) * (vy + omega * kx));
