@@ -62,7 +62,7 @@ public:
         Finish,
     };
 
-    void init(MotorBase* dirmotor, MotorBase* drivemotor, PhotoGate* photogate, 
+    void init(C620Motor* dirmotor, VESCMotor* drivemotor, PhotoGate* photogate, 
               uint8_t homing_way, const std::array<float, 2>& edge_at_zero){
         dirmotor_ = dirmotor;
         drivemotor_ = drivemotor;
@@ -113,7 +113,7 @@ public:
     }
 
     void homing(void){
-        if(hashoming_) return;
+        if(hashoming_ || dirmotor_->isOffline()) return;
 
         ramp_deg_homing_ += (map_[homing_way_] * deg_homing_speed_);
         dirmotor_->setMotorDeg(ramp_deg_homing_);
@@ -195,8 +195,8 @@ private:
     static constexpr float kWheelDriveReduction = 1.0f;     //电机输出轴->驱动轮的减速比
     static constexpr float kWheelDirReduction = 1.0f;       //电机输出轴->舵向轮的减速比
 
-    MotorBase* dirmotor_{};
-    MotorBase* drivemotor_{};
+    C620Motor* dirmotor_{};
+    VESCMotor* drivemotor_{};
     PhotoGate* photogate_{};
 
 /*------------------------------homing----------------------------*/
@@ -243,8 +243,8 @@ class SteerChassis{
     */
 
 public:
-    SteerChassis(const std::array<MotorBase* , kWheelNum> &dirmotors,
-                 const std::array<MotorBase* , kWheelNum> &drivemotors){
+    SteerChassis(const std::array<C620Motor* , kWheelNum> &dirmotors,
+                 const std::array<VESCMotor* , kWheelNum> &drivemotors){
         for(uint8_t i = 0; i < kWheelNum; ++i){
             steerwheels_[i].init(dirmotors[i], drivemotors[i], 
                 chassis_photogates[i], homing_ways[i], edge_at_zeros[i]);
@@ -254,7 +254,7 @@ public:
     void run(const pub_chassis_cmd &cmd){
         const float vx = cmd.linear_x_;
         const float vy = cmd.linear_y_;
-        const float omega = cmd.omega_;
+        const float omega = cmd.omega_;     //注意了！！！单位是弧度！rad
 
         velocitys_[0].speed = std::sqrt((vx - omega * ky) * (vx - omega * ky) + 
                                      (vy + omega * kx) * (vy + omega * kx));

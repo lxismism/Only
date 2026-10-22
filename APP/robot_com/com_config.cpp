@@ -74,7 +74,7 @@ VESCMotor chassis_drivemotor4(&fdcan1_bus, 104, MotorBase::OutputType::SPEED,
 
 
 
-std::array<MotorBase*, 4> chassis_drivemotors{&chassis_drivemotor1, &chassis_drivemotor2,
+std::array<VESCMotor*, 4> chassis_drivemotors{&chassis_drivemotor1, &chassis_drivemotor2,
                                               &chassis_drivemotor3, &chassis_drivemotor4};
 
 
@@ -115,7 +115,7 @@ C620Motor chassis_dirmotor4(&fdcan2_bus, 0x204, false, 0x200, false,
     20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
     Derivative_On_Measurement, 1.0f);
 
-std::array<MotorBase*, 4> chassis_dirmotors{&chassis_dirmotor1, &chassis_dirmotor2,
+std::array<C620Motor*, 4> chassis_dirmotors{&chassis_dirmotor1, &chassis_dirmotor2,
                                             &chassis_dirmotor3, &chassis_dirmotor4};
                                             
 
@@ -133,7 +133,7 @@ CanBus fdcan3_bus(hfdcan3);
 
 DM4310Motor wrist_motor(&fdcan3_bus, 0x06, 0x06, DM4310Motor::PosWithSpeed);
 
-C610Motor extend_motor(&fdcan3_bus, 0x202, false, 0x200, false, 
+C610Motor extend_motor(&fdcan3_bus, 0x205, false, 0x200, false, 
     MotorBase::OutputType::DEGREE, 36.0f,10000.0f, 0.005f,
     16.0f, 5.0f, 0.0f, 10000.0f, 10000.0f,
     Derivative_On_Measurement | INCREATEMENT_OF_OUT, 0.1f,
@@ -141,6 +141,13 @@ C610Motor extend_motor(&fdcan3_bus, 0x202, false, 0x200, false,
 
 
 C620Motor lift_motor(&fdcan3_bus, 0x201, false, 0x200, false, 
+    MotorBase::OutputType::DEGREE, 3591.0f / 187.0f,20000.0f, 0.01f,
+    400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
+    Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
+    20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
+    Derivative_On_Measurement, 1.0f);
+
+C620Motor tripod_motor(&fdcan3_bus, 0x202, false, 0x200, false, 
     MotorBase::OutputType::DEGREE, 3591.0f / 187.0f,20000.0f, 0.01f,
     400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
     Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
@@ -218,6 +225,7 @@ uint8_t comServiceInit(){
     fdcan3_bus.registerDevice(&extend_motor);
     fdcan3_bus.registerDevice(&wrist_motor);
     fdcan3_bus.registerDevice(&lift_motor);
+    fdcan3_bus.registerDevice(&tripod_motor);
 
     uart2_rx_semaphore = osSemaphoreNew(1, 0, NULL);
     uart2_port.startRxDmaIdle();
@@ -399,17 +407,34 @@ void can3SendTask(void *argument){
     for(;;){
 
         {   
-            extend_motor.update();
             lift_motor.update();
+            tripod_motor.update();
 
             uint8_t data[8]{};
             uint32_t motor_ids[4] = {0x201, 0x202, 0, 0};
             int16_t commands[4] = {static_cast<int16_t>(lift_motor.cmdTrans()),
-                                   static_cast<int16_t>(extend_motor.cmdTrans()), 0, 0};
+                                   static_cast<int16_t>(tripod_motor.cmdTrans()), 0, 0};
             CanBus::ClassicPack pack{};
             pack.type = CanBus::Type::STANDARD;
             pack.dlc = FDCAN_DLC_BYTES_8;
             pack.id = 0x200;
+            packDJIMotorCanMsg(pack.id, motor_ids, commands, 4, data);
+            for(uint8_t i = 0; i < 8U; ++i) pack.data[i] = data[i]; 
+
+            fdcan3_bus.addCanMsg(pack);
+        }
+
+        {   
+            extend_motor.update();
+
+            uint8_t data[8]{};
+            uint32_t motor_ids[4] = {0x205, 0, 0, 0};
+            int16_t commands[4] = {static_cast<int16_t>(extend_motor.cmdTrans()),
+                                   0, 0, 0};
+            CanBus::ClassicPack pack{};
+            pack.type = CanBus::Type::STANDARD;
+            pack.dlc = FDCAN_DLC_BYTES_8;
+            pack.id = 0x1FF;
             packDJIMotorCanMsg(pack.id, motor_ids, commands, 4, data);
             for(uint8_t i = 0; i < 8U; ++i) pack.data[i] = data[i]; 
 
