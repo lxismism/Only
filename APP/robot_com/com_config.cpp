@@ -74,7 +74,7 @@ VESCMotor chassis_drivemotor4(&fdcan1_bus, 104, MotorBase::OutputType::SPEED,
 
 
 
-std::array<MotorBase*, 4> chassis_drivemotors{&chassis_drivemotor1, &chassis_drivemotor2,
+std::array<VESCMotor*, 4> chassis_drivemotors{&chassis_drivemotor1, &chassis_drivemotor2,
                                               &chassis_drivemotor3, &chassis_drivemotor4};
 
 
@@ -115,7 +115,7 @@ C620Motor chassis_dirmotor4(&fdcan2_bus, 0x204, false, 0x200, false,
     20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
     Derivative_On_Measurement, 1.0f);
 
-std::array<MotorBase*, 4> chassis_dirmotors{&chassis_dirmotor1, &chassis_dirmotor2,
+std::array<C620Motor*, 4> chassis_dirmotors{&chassis_dirmotor1, &chassis_dirmotor2,
                                             &chassis_dirmotor3, &chassis_dirmotor4};
                                             
 

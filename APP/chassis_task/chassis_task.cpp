@@ -18,8 +18,8 @@
 
 osThreadId_t Chassis_TaskHandle;
 
-extern std::array<MotorBase*, kWheelNum> chassis_dirmotors;
-extern std::array<MotorBase*, kWheelNum> chassis_drivemotors;
+extern std::array<C620Motor*, kWheelNum> chassis_dirmotors;
+extern std::array<VESCMotor*, kWheelNum> chassis_drivemotors;
 SteerChassis SteerChassis_solver(chassis_dirmotors, chassis_drivemotors);
 static pub_chassis_cmd chassis_cmd_sub{};
 
