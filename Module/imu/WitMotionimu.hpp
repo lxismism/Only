@@ -10,12 +10,12 @@
  */
 
 #pragma once
-#include "topic_pool.h"
+#include "topic_pool.hpp"
 
 class WitMotionimu{
 public:
 
-enum class RxState : uint8_t {
+enum class rx_state_Witimu_t : uint8_t {
     WAIT_HEADER = 0,
     WAIT_TYPE,
     WAIT_DATA,
@@ -25,34 +25,34 @@ enum class RxState : uint8_t {
 uint8_t processByte(uint8_t byte){
 
     switch (state_) {
-        case RxState::WAIT_HEADER : {
+        case rx_state_Witimu_t::WAIT_HEADER : {
             if(byte == 0x55){
                 rx_buf_[0] = byte;
                 rx_idx_++;
-                state_ = RxState::WAIT_TYPE;
+                state_ = rx_state_Witimu_t::WAIT_TYPE;
             }
         } break;
 
-        case RxState::WAIT_TYPE : {
+        case rx_state_Witimu_t::WAIT_TYPE : {
             if(byte == 0x53){
                 rx_buf_[1] = byte;
                 rx_idx_++;
-                state_ = RxState::WAIT_DATA;
+                state_ = rx_state_Witimu_t::WAIT_DATA;
             } else {
                 resetState();
             }
 
         } break;
 
-        case RxState::WAIT_DATA : {
+        case rx_state_Witimu_t::WAIT_DATA : {
             rx_buf_[rx_idx_] = byte;
             rx_idx_++;
             if(rx_idx_ >= (kRxBufLen - 1U)){
-                state_ = RxState::WAIT_SUM;
+                state_ = rx_state_Witimu_t::WAIT_SUM;
             }
         } break;
 
-        case RxState::WAIT_SUM : {
+        case rx_state_Witimu_t::WAIT_SUM : {
             uint8_t rx_sum = calculateSum(rx_buf_);
             resetState();
             if(rx_sum == byte){
@@ -75,7 +75,7 @@ uint8_t processByte(uint8_t byte){
                 newest_data_.roll_deg = static_cast<float>(raw_roll) * 180.0f / 32768.0f;
                 newest_data_.pitch_deg = static_cast<float>(raw_pitch) * 180.0f / 32768.0f;
                 newest_data_.yaw_deg = static_cast<float>(raw_yaw) * 180.0f / 32768.0f;
-              
+                    
                 return 0x53;
             } 
 
@@ -98,12 +98,12 @@ private:
 
 static constexpr uint8_t kRxBufLen = 11U;
 
-RxState state_{RxState::WAIT_HEADER};
+rx_state_Witimu_t state_{rx_state_Witimu_t::WAIT_HEADER};
 uint8_t rx_buf_[kRxBufLen]{};
 uint8_t rx_idx_{};
 
 void resetState(){
-    state_ = RxState::WAIT_HEADER;
+    state_ = rx_state_Witimu_t::WAIT_HEADER;
     rx_idx_ = 0;
 }
 

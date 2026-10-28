@@ -20,6 +20,7 @@
 #include "memory_map.h"
 #include "UartPort.hpp"
 #include "WitMotionimu.hpp"
+#include "rm_pocket.hpp"
 
 #include "Canbus.hpp"
 #include "MotorBase.hpp"
@@ -28,7 +29,7 @@
 #include "dmMotor.hpp"
 
 #include "topics.hpp"
-#include "topic_pool.h"
+#include "topic_pool.hpp"
 #include <array>
 #include "chassis_solution.hpp"
 
@@ -185,6 +186,8 @@ UartPort uart3_port(&huart3, uart3_rx_dma, sizeof(uart3_rx_dma),
 
 osSemaphoreId_t uart3_rx_semaphore = NULL;
 
+RmPocket rm_pocket{};
+
 /*-------------------------------------usart3----------------------------------------*/
 
 uint8_t comServiceInit(){
@@ -278,7 +281,11 @@ void uart3RxProcessTask(void *argument){
         
         UartPort::Packet packet{};
         while(uart3_port.Read(packet)){
-            
+            for(uint8_t i = 0; i < packet.len; ++i){
+                if(rm_pocket.processByte(packet.data[i])){
+                    
+                }
+            }
         }
     }
 }

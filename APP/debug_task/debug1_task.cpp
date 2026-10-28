@@ -25,7 +25,7 @@
 
 #include "com_config.h"
 #include "pid_controller.h"
-#include "topic_pool.h"
+#include "topic_pool.hpp"
 #include "chassis_solution.hpp"
 #include "chassis_task.h"
 #include "math_utils.hpp"

@@ -24,7 +24,7 @@
 
 #include "photogate.hpp"
 
-#include "topic_pool.h"
+#include "topic_pool.hpp"
 #include "math_utils.hpp"
 #include <array>
 
