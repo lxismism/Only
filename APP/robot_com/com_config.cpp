@@ -280,7 +280,7 @@ void uart3RxProcessTask(void *argument){
 
     (void)argument;
     for(;;){
-        osSemaphoreAcquire(uart3_rx_semaphore, osWaitForever);
+        osSemaphoreAcquire(uart3_rx_semaphore, 50);
         
         UartPort::Packet packet{};
         while(uart3_port.Read(packet)){
@@ -303,6 +303,21 @@ void uart3RxProcessTask(void *argument){
 
                 }
             }
+        }
+        if(rm_pocket.isOffline()){
+            rc_data_msg.joyRHori = 992U;
+            rc_data_msg.joyRVert = 992U;
+            rc_data_msg.joyLVert = 992U;
+            rc_data_msg.joyLHori = 992U;
+
+            rc_data_msg.swA = RC_2_Pos_SW_State_t::UP;
+            rc_data_msg.swB = RC_3_Pos_SW_State_t::UP;
+            rc_data_msg.swC = RC_3_Pos_SW_State_t::UP;
+            rc_data_msg.swD = RC_2_Pos_SW_State_t::UP;
+            rc_data_msg.swE = RC_BTN_SW_State_t::RELEASED;
+            rc_data_msg.pot = 992U;
+
+            rc_data_pub.Publish(rc_data_msg);
         }
     }
 }

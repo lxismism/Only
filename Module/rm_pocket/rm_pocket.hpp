@@ -11,6 +11,8 @@
 
 #pragma once
 
+
+#include "stm32h7xx_hal.h"
 #include <cstring>
 #include <cstdint>
 
@@ -113,12 +115,12 @@ public:
 
             case rx_state_CRSF_t::WAITING_FOR_CRC: {
                 current_frame_.crc = byte;
-                bool is_uncode = false;
+                bool is_complete = false;
                 if(current_frame_.crc == crc8(current_frame_)){
-                    is_uncode = onRxFrameComplete(current_frame_);
+                    is_complete = onRxFrameComplete(current_frame_);
                 }   
                 resetState();          
-                return is_uncode;
+                return is_complete;
             }break;
             
             default: {
@@ -126,10 +128,13 @@ public:
             }
         }
 
+
         return false;
     }
 
     RC_State_t getRCState(){ return newest_rc_state_; }
+
+    bool isOffline(){ return HAL_GetTick() - last_complete_tick_ > kTimeoutMs; }
 
 private:
     static constexpr uint8_t CRSF_SYNC_BYTE = 0xC8;
@@ -140,10 +145,14 @@ private:
     static constexpr uint16_t kChannelValueMax = 1811U;
     static constexpr uint16_t kJoyDeadBand = 150U;
 
+    static constexpr uint32_t kTimeoutMs = 500U;
+
     rx_state_CRSF_t rx_state_{};
     CRSF_frame_t current_frame_{};
     RC_State_t newest_rc_state_{};
     uint8_t rx_idx_{};
+
+    uint32_t last_complete_tick_{};
 
 
 
@@ -217,7 +226,24 @@ private:
         newest_rc_state_.swE = (ch[8] < kChannelValueMid) ? RC_BTN_SW_State_t::RELEASED : RC_BTN_SW_State_t::PRESSED;
         newest_rc_state_.pot = ch[9];
 
+        last_complete_tick_ = HAL_GetTick();
+
         return true;
+    }
+
+    void resetRC(void){
+        newest_rc_state_.joyRHori = kChannelValueMid;
+        newest_rc_state_.joyRVert = kChannelValueMid;
+        newest_rc_state_.joyLHori = kChannelValueMid;
+        newest_rc_state_.joyLVert = kChannelValueMid;
+
+        newest_rc_state_.swA = RC_2_Pos_SW_State_t::UP;
+        newest_rc_state_.swB = RC_3_Pos_SW_State_t::UP;
+        newest_rc_state_.swC = RC_3_Pos_SW_State_t::UP;
+        newest_rc_state_.swD = RC_2_Pos_SW_State_t::UP;
+        newest_rc_state_.swE = RC_BTN_SW_State_t::RELEASED;
+        newest_rc_state_.pot = kChannelValueMid;
+
     }
 
 };
