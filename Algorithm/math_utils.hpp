@@ -15,8 +15,8 @@ static constexpr float kPI = 3.1415926535897f;
 namespace math_utils {
 
 
-inline float Clamp(float val, float min, float max){
-    return (val >= max)? max : ((val <= min)? min : val);
+inline void Clamp(float &val, float min, float max){
+    val = (val >= max)? max : ((val <= min)? min : val);
 }
 
 inline float WrapAngle(float val, float min, float max){

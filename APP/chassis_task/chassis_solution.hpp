@@ -251,10 +251,12 @@ public:
         }
     }
 
-    void run(const pub_chassis_cmd &cmd){
-        const float vx = cmd.linear_x_;
-        const float vy = cmd.linear_y_;
-        const float omega = cmd.omega_;     //注意了！！！单位是弧度！rad
+    void run(const pub_chassis_cmd &cmd, const pub_imu_data &imu_data){
+        const float yaw = imu_data.yaw_deg * DEG_2_RAD;
+
+        const float vx = cmd.linear_x_ * std::cos(yaw) + cmd.linear_y_ * std::sin(yaw);
+        const float vy = -cmd.linear_x_ * std::sin(yaw) + cmd.linear_y_ * std::cos(yaw);
+        const float omega = cmd.deg_omega_ * DEG_2_RAD; 
 
         velocitys_[0].speed = std::sqrt((vx - omega * ky) * (vx - omega * ky) + 
                                      (vy + omega * kx) * (vy + omega * kx));

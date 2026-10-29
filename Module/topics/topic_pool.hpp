@@ -22,7 +22,7 @@
 struct pub_chassis_cmd{
     float linear_x_;
     float linear_y_;
-    float omega_;
+    float deg_omega_;
 };
 
 struct pub_imu_data{
@@ -38,7 +38,7 @@ struct pub_rc_data{
   uint16_t joyLHori;      //CH4
 
   RC_2_Pos_SW_State_t swA;      //CH5
-  RC_3_Pos_SW_State_t SWB;      //CH6
+  RC_3_Pos_SW_State_t swB;      //CH6
   RC_3_Pos_SW_State_t swC;      //CH7
   RC_2_Pos_SW_State_t swD;      //CH8
   RC_BTN_SW_State_t swE;      //CH9
@@ -50,6 +50,6 @@ struct pub_rc_data{
   uint16_t channel_14;      //CH14
   uint16_t channel_15;      //CH15
   uint16_t channel_16;      //CH16
-};
+};  //size:28byte
 
 #pragma pack()

@@ -72,9 +72,16 @@ uint8_t processByte(uint8_t byte){
 
                 //data[8]~data[9]是版本号,data[10]是校验和
 
-                newest_data_.roll_deg = static_cast<float>(raw_roll) * 180.0f / 32768.0f;
-                newest_data_.pitch_deg = static_cast<float>(raw_pitch) * 180.0f / 32768.0f;
-                newest_data_.yaw_deg = static_cast<float>(raw_yaw) * 180.0f / 32768.0f;
+                if(!is_inited_){
+                    offset_.roll_deg = static_cast<float>(raw_roll) * 180.0f / 32768.0f;
+                    offset_.pitch_deg = static_cast<float>(raw_pitch) * 180.0f / 32768.0f;
+                    offset_.yaw_deg = static_cast<float>(raw_yaw) * 180.0f / 32768.0f;
+                    is_inited_ = true;
+                }
+
+                newest_data_.roll_deg = static_cast<float>(raw_roll) * 180.0f / 32768.0f - offset_.roll_deg;
+                newest_data_.pitch_deg = static_cast<float>(raw_pitch) * 180.0f / 32768.0f - offset_.pitch_deg;
+                newest_data_.yaw_deg = static_cast<float>(raw_yaw) * 180.0f / 32768.0f - offset_.yaw_deg;
                     
                 return 0x53;
             } 
@@ -102,6 +109,10 @@ rx_state_Witimu_t state_{rx_state_Witimu_t::WAIT_HEADER};
 uint8_t rx_buf_[kRxBufLen]{};
 uint8_t rx_idx_{};
 
+pub_imu_data newest_data_{};
+pub_imu_data offset_{};
+bool is_inited_{false};
+
 void resetState(){
     state_ = rx_state_Witimu_t::WAIT_HEADER;
     rx_idx_ = 0;
@@ -115,6 +126,6 @@ uint8_t calculateSum(uint8_t rx_buf[kRxBufLen]){
     return static_cast<uint8_t>(sum & 0xFF);
 }
 
-pub_imu_data newest_data_{};
+
 
 };
