@@ -22,6 +22,8 @@
 #include "WitMotionimu.hpp"
 #include "rm_pocket.hpp"
 
+#include "UsbPort.hpp"
+
 #include "Canbus.hpp"
 #include "MotorBase.hpp"
 #include "djiMotor.hpp"
@@ -193,6 +195,18 @@ static pub_rc_data rc_data_msg{};
 
 /*-------------------------------------usart3----------------------------------------*/
 
+
+/*--------------------------------------usb------------------------------------------*/
+
+osThreadId_t usbProcess_TaskHandle;
+
+osSemaphoreId_t usb_semaphore = NULL;
+
+void onUsbCb(void *user);
+
+/*--------------------------------------usb------------------------------------------*/
+
+
 uint8_t comServiceInit(){
 
     canFilterInit(&hfdcan1, FDCAN_EXTENDED_ID, 0, 0, FDCAN_FILTER_TO_RXFIFO0, 0);
@@ -230,6 +244,9 @@ uint8_t comServiceInit(){
 
     uart3_rx_semaphore = osSemaphoreNew(1, 0, NULL);
     uart3_port.startRxDmaIdle();
+
+    usb_semaphore = osSemaphoreNew(1, 0, NULL);
+    UsbPort::Instance().init(onUsbCb, nullptr);
 
 
 
@@ -323,6 +340,33 @@ void uart3RxProcessTask(void *argument){
 }
 
 /*-------------------------------------usart3----------------------------------------*/
+
+
+/*--------------------------------------usb------------------------------------------*/
+
+void onUsbCb(void *user){
+    (void)user;
+    if(usb_semaphore != nullptr){
+        osSemaphoreRelease(usb_semaphore);
+    }
+}
+
+void usbProcessTask(void *argument){
+
+    (void)argument;
+
+    for(;;){
+        osSemaphoreAcquire(usb_semaphore, osWaitForever);
+        UsbPort::Packet packet{};
+        while(UsbPort::Instance().Read(packet)){
+            UsbPort::Instance().WriteAsync(packet.data, packet.len);
+        }
+        UsbPort::Instance().PumpTx();
+    }
+}
+
+/*--------------------------------------usb------------------------------------------*/
+
 
 /*-------------------------------------fdcan1----------------------------------------*/
 
@@ -472,3 +516,5 @@ void can3SendTask(void *argument){
 }
 
 /*-------------------------------------fdcan3----------------------------------------*/
+
+

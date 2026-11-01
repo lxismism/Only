@@ -20,11 +20,12 @@ extern "C"{
 uint8_t comServiceInit();
 void uart2RxProcessTask(void *argument);
 void uart3RxProcessTask(void *argument);
+void usbProcessTask(void *argument);
+
 
 void can1SendTask(void *argument);
 void can2SendTask(void *argument);
 void can3SendTask(void *argument);
-
 
 #ifdef __cplusplus
 }

@@ -22,7 +22,7 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-#include <string.h>
+#include "UsbPortC.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,7 +31,6 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-#define ECHO_BUFFER_SIZE 64U
 /* USER CODE END PV */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -95,10 +94,7 @@ uint8_t UserRxBufferHS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferHS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-volatile uint8_t echo_buf[ECHO_BUFFER_SIZE];
-volatile uint32_t rx_times = 0U;
-volatile uint32_t tx_times = 0U;
-volatile uint32_t tx_busy  = 0U;
+
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -267,21 +263,10 @@ static int8_t CDC_Control_HS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_HS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 11 */
-  if(Buf != NULL && Len != NULL && Len > 0U){
-    uint32_t len = *Len;
-    if(len > sizeof(echo_buf)){
-      len = sizeof(echo_buf);
-    }
-
-    memcpy(echo_buf, Buf, len);
-    rx_times++;
-    
-    if(CDC_Transmit_HS(echo_buf, (uint16_t)len) == USBD_BUSY){
-      tx_busy++;
-    }
+  if(Buf != NULL && Len != NULL && *Len > 0U){
+    UsbPort_onRxFromIsr(Buf, *Len);
   }
-
-
+  
   USBD_CDC_SetRxBuffer(&hUsbDeviceHS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceHS);
   return (USBD_OK);
@@ -328,7 +313,7 @@ static int8_t CDC_TransmitCplt_HS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
   UNUSED(Buf);
   UNUSED(Len);
   UNUSED(epnum);
-  tx_times++;
+  UsbPort_onTxCpltFromIsr();
   /* USER CODE END 14 */
   return result;
 }

@@ -31,6 +31,8 @@ extern osThreadId_t can2Send_TaskHandle;
 extern osThreadId_t can3Send_TaskHandle;
 extern osThreadId_t Chassis_TaskHandle;
 extern osThreadId_t Control_TaskHandle;
+extern osThreadId_t usbProcess_TaskHandle;
+
 
 
 void osTaskInit(void)
@@ -99,5 +101,11 @@ void osTaskInit(void)
     };
     Control_TaskHandle = osThreadNew(controlTask, NULL, &controlTaskHandle_attributes);
 
+    const osThreadAttr_t usbProcessTaskHandle_attributes = {
+        .name = "usbProcess_TaskHandle",
+        .stack_size = 256 * 4,
+        .priority = (osPriority_t)osPriorityRealtime,
+    };
+    usbProcess_TaskHandle = osThreadNew(usbProcessTask, NULL, &usbProcessTaskHandle_attributes);
 
 }

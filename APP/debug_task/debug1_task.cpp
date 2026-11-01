@@ -31,6 +31,9 @@
 #include "math_utils.hpp"
 #include "photogate.hpp"
 
+#include "UsbPort.hpp"
+#include "UsbPortC.h"
+
 osThreadId_t Debug1_TaskHandle;
 
 static TypedTopicSubscriber<pub_imu_data> imu_data_sub("imu_data", 8U);
