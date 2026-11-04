@@ -30,6 +30,7 @@
 #include "chassis_task.h"
 #include "math_utils.hpp"
 #include "photogate.hpp"
+#include "host_comm.hpp"
 
 #include "UsbPort.hpp"
 #include "UsbPortC.h"
@@ -39,6 +40,9 @@ osThreadId_t Debug1_TaskHandle;
 static TypedTopicSubscriber<pub_imu_data> imu_data_sub("imu_data", 8U);
 static pub_imu_data imu_data{};
 
+static TypedTopicSubscriber<pub_vision_pose> vision_pose_sub("vision_pose", 8U);
+static pub_vision_pose vision_pose_msg{};
+
 void debug1Task(void *argument)
 {
     TickType_t currentTime = xTaskGetTickCount();
@@ -47,6 +51,7 @@ void debug1Task(void *argument)
     for(;;)
     {
         imu_data_sub.TryGet(&imu_data);
+        vision_pose_sub.TryGet(&vision_pose_msg);
 
         vTaskDelayUntil(&currentTime, 5);
     }

@@ -52,4 +52,11 @@ struct pub_rc_data{
   uint16_t channel_16;      //CH16
 };  //size:28byte
 
+struct pub_vision_pose{
+  float x;
+  float y;
+  float yaw;
+  uint32_t timestamp_ms;
+};
+
 #pragma pack()

@@ -23,6 +23,8 @@
 #include "rm_pocket.hpp"
 
 #include "UsbPort.hpp"
+#include "host_comm.hpp"
+#include "host_msgs.hpp"
 
 #include "Canbus.hpp"
 #include "MotorBase.hpp"
@@ -52,25 +54,25 @@ osThreadId_t can1Send_TaskHandle;
 CanBus fdcan1_bus(hfdcan1);
 
 VESCMotor chassis_drivemotor1(&fdcan1_bus, 101, MotorBase::OutputType::SPEED, 
-    VESCMotor::CAN_PACKET_SET_CURRENT, VESCMotor::CAN_PACKET_STATUS,
+    VESCMotor::CAN_PACKET_SET_RPM, VESCMotor::CAN_PACKET_STATUS,
     21.0f, 1.0f, 20000.0f, 0.0f,
     7.0f, 5.0f, 0.17f, 20000.0f, 20000.0f,
     Derivative_On_Measurement | INCREATEMENT_OF_OUT, 0.1f);
 
 VESCMotor chassis_drivemotor2(&fdcan1_bus, 102, MotorBase::OutputType::SPEED, 
-    VESCMotor::CAN_PACKET_SET_CURRENT,VESCMotor::CAN_PACKET_STATUS,
+    VESCMotor::CAN_PACKET_SET_RPM,VESCMotor::CAN_PACKET_STATUS,
     21.0f,1.0f, 20000.0f, 0.0f,
     7.0f, 5.0f, 0.17f, 20000.0f, 20000.0f,
     Derivative_On_Measurement | INCREATEMENT_OF_OUT, 0.1f);
 
 VESCMotor chassis_drivemotor3(&fdcan1_bus, 103, MotorBase::OutputType::SPEED, 
-    VESCMotor::CAN_PACKET_SET_CURRENT, VESCMotor::CAN_PACKET_STATUS,
+    VESCMotor::CAN_PACKET_SET_RPM, VESCMotor::CAN_PACKET_STATUS,
     21.0f,1.0f, 20000.0f, 0.00f,
     7.0f, 5.0f, 0.17f, 20000.0f, 20000.0f,
     Derivative_On_Measurement | INCREATEMENT_OF_OUT, 0.1f);
 
 VESCMotor chassis_drivemotor4(&fdcan1_bus, 104, MotorBase::OutputType::SPEED, 
-    VESCMotor::CAN_PACKET_SET_CURRENT, VESCMotor::CAN_PACKET_STATUS,
+    VESCMotor::CAN_PACKET_SET_RPM, VESCMotor::CAN_PACKET_STATUS,
     21.0f,1.0f, 20000.0f, 0.0f,
     7.0f, 5.0f, 0.17f, 20000.0f, 20000.0f,
     Derivative_On_Measurement | INCREATEMENT_OF_OUT, 0.1f);
@@ -94,29 +96,29 @@ C620Motor chassis_dirmotor1(&fdcan2_bus, 0x201, false, 0x200, false,
     MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
     400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
     Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
-    20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
-    Derivative_On_Measurement, 1.0f);
+    15.0f, 0.0f, 0.5f, 6000.0f, 6000.0f,
+    Derivative_On_Measurement, 0.1f);
 
 C620Motor chassis_dirmotor2(&fdcan2_bus, 0x202, false, 0x200, false, 
     MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
     400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
     Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
-    20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
-    Derivative_On_Measurement, 1.0f);
+    15.0f, 0.0f, 0.5f, 6000.0f, 6000.0f,
+    Derivative_On_Measurement, 0.1f);
 
 C620Motor chassis_dirmotor3(&fdcan2_bus, 0x203, false, 0x200, false, 
     MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
     400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
     Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
-    20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
-    Derivative_On_Measurement, 1.0f);
+    15.0f, 0.0f, 0.5f, 6000.0f, 6000.0f,
+    Derivative_On_Measurement, 0.1f);
 
 C620Motor chassis_dirmotor4(&fdcan2_bus, 0x204, false, 0x200, false, 
     MotorBase::OutputType::DEGREE, 8.0f,20000.0f, 0.01f,
     400.0f, 5000.0f, 0.0f, 20000.0f, 20000.0f,
     Derivative_On_Measurement | INCREATEMENT_OF_OUT | OutputFilter, 0.1f,
-    20.0f, 0.0f, 0.0f, 6000.0f, 6000.0f,
-    Derivative_On_Measurement, 1.0f);
+    15.0f, 0.0f, 0.5f, 6000.0f, 6000.0f,
+    Derivative_On_Measurement, 0.1f);
 
 std::array<C620Motor*, 4> chassis_dirmotors{&chassis_dirmotor1, &chassis_dirmotor2,
                                             &chassis_dirmotor3, &chassis_dirmotor4};
@@ -204,6 +206,16 @@ osSemaphoreId_t usb_semaphore = NULL;
 
 void onUsbCb(void *user);
 
+
+HostComm host_comm{};
+VisionPose host_visionPose_data{};
+volatile uint32_t host_frame_ok{};//用来看有没有丢包的，如果跟seq相等，就是没丢。
+void onVisionPoseMsg(const uint8_t *data, uint8_t len, void *user);
+
+static TypedTopicPublisher<pub_vision_pose> vision_pose_pub("vision_pose");
+static pub_vision_pose vision_pose_msg{};
+
+
 /*--------------------------------------usb------------------------------------------*/
 
 
@@ -248,8 +260,10 @@ uint8_t comServiceInit(){
     usb_semaphore = osSemaphoreNew(1, 0, NULL);
     UsbPort::Instance().init(onUsbCb, nullptr);
 
-
-
+    host_comm.init();
+    if(!host_comm.registerMessage(VisionPose::id, sizeof(VisionPose), onVisionPoseMsg, nullptr)){
+        Error_Handler();
+    };
 
     return 0;
 }
@@ -359,10 +373,21 @@ void usbProcessTask(void *argument){
         osSemaphoreAcquire(usb_semaphore, osWaitForever);
         UsbPort::Packet packet{};
         while(UsbPort::Instance().Read(packet)){
-            UsbPort::Instance().WriteAsync(packet.data, packet.len);
+            host_comm.processBuffer(packet.data, packet.len);
         }
         UsbPort::Instance().PumpTx();
     }
+}
+
+void onVisionPoseMsg(const uint8_t *data, uint8_t len, void *user){
+    if(data == nullptr || len != sizeof(VisionPose)) return;
+    VisionPose::unpack(data, host_visionPose_data);
+    vision_pose_msg.x = host_visionPose_data.x;
+    vision_pose_msg.y = host_visionPose_data.y;
+    vision_pose_msg.yaw = host_visionPose_data.yaw;
+    vision_pose_msg.timestamp_ms = host_visionPose_data.timestamp_ms;
+    vision_pose_pub.Publish(vision_pose_msg);
+    host_frame_ok++;
 }
 
 /*--------------------------------------usb------------------------------------------*/

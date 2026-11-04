@@ -31,10 +31,10 @@
 static constexpr uint8_t kWheelNum = 4U;        //轮数
 
 static constexpr std::array<std::array<float, 2>, kWheelNum> edge_at_zeros{{
-    {-150.0f, 30.0f},
     {-60.0f, 120.0f},
-    {30.0f, -150.0f},
-    {120.0f, -60.0f}
+    {120.0f, -60.0f},
+    {105.0f, -75.0f},
+    {105.0f, -75.0f}
 }};
 
 static constexpr uint8_t homing_ways[kWheelNum]{0, 1, 0, 1};
@@ -258,29 +258,30 @@ public:
         const float vy = -cmd.linear_x_ * std::sin(yaw) + cmd.linear_y_ * std::cos(yaw);
         const float omega = cmd.deg_omega_ * DEG_2_RAD; 
 
-        velocitys_[0].speed = std::sqrt((vx - omega * ky) * (vx - omega * ky) + 
-                                     (vy + omega * kx) * (vy + omega * kx));
-        velocitys_[1].speed = -std::sqrt((vx - omega * ky) * (vx - omega * ky) + 
-                                     (vy - omega * kx) * (vy - omega * kx));
-        velocitys_[2].speed = std::sqrt((vx + omega * ky) * (vx + omega * ky) + 
-                                     (vy - omega * kx) * (vy - omega * kx));
-        velocitys_[3].speed = -std::sqrt((vx + omega * ky) * (vx + omega * ky) + 
-                                     (vy + omega * kx) * (vy + omega * kx));
+        velocitys_[0].speed = std::sqrt((vx - omega * ky0) * (vx - omega * ky0) + 
+                                     (vy + omega * kx0) * (vy + omega * kx0));
+        velocitys_[1].speed = -std::sqrt((vx - omega * ky1) * (vx - omega * ky1) + 
+                                     (vy - omega * kx1) * (vy - omega * kx1));
+        velocitys_[2].speed = std::sqrt((vx + omega * ky2) * (vx + omega * ky2) + 
+                                     (vy - omega * kx2) * (vy - omega * kx2));
+        velocitys_[3].speed = -std::sqrt((vx + omega * ky3) * (vx + omega * ky3) + 
+                                     (vy + omega * kx3) * (vy + omega * kx3));
         desaturate();
         
-        velocitys_[0].dir = std::atan2(vy + omega * kx , vx - omega * ky) * RAD_2_DEG;
-        velocitys_[1].dir = std::atan2(vy - omega * kx , vx - omega * ky) * RAD_2_DEG;
-        velocitys_[2].dir = std::atan2(vy - omega * kx , vx + omega * ky) * RAD_2_DEG;
-        velocitys_[3].dir = std::atan2(vy + omega * kx , vx + omega * ky) * RAD_2_DEG;
+        velocitys_[0].dir = std::atan2(vy + omega * kx0 , vx - omega * ky0) * RAD_2_DEG;
+        velocitys_[1].dir = std::atan2(vy - omega * kx1 , vx - omega * ky1) * RAD_2_DEG;
+        velocitys_[2].dir = std::atan2(vy - omega * kx2 , vx + omega * ky2) * RAD_2_DEG;
+        velocitys_[3].dir = std::atan2(vy + omega * kx3 , vx + omega * ky3) * RAD_2_DEG;
 
         if(std::fabs(vx) < 0.01f &&
            std::fabs(vy) < 0.01f &&
            std::fabs(omega) < 0.01f){
-            velocitys_[0].dir = 135.0f;
-            velocitys_[1].dir = -135.0f;
-            velocitys_[2].dir = -45.0f;
-            velocitys_[3].dir = 45.0f;
+            velocitys_[0].dir = std::atan2(kx0, -ky0);
+            velocitys_[1].dir = std::atan2(-kx1, -ky1);
+            velocitys_[2].dir = std::atan2(-kx2, ky2);
+            velocitys_[3].dir = std::atan2(kx3, ky3);
         }
+
 
         for(uint8_t i = 0; i < kWheelNum; ++i){
             steerwheels_[i].setVelocity(velocitys_[i]);
@@ -303,12 +304,19 @@ public:
 
 private:
 
-    static constexpr float kWheelbase = 1.0f;   //轴距
-    static constexpr float kWheeltrack = 1.0f;  //轮距
 
     //ky,kx的值即便在同一个机器人上，也应该是可以不同的，其中，它的原点取决于你想让机器人自转时，绕机器人的哪个点旋转
-    static constexpr float ky = kWheelbase / 2.0f;  //ky的含义是，点到x轴的距离
-    static constexpr float kx = kWheeltrack / 2.0f; //kx的含义是，点到y轴的距离
+    static constexpr float ky0 = 0.18f;  //ky的含义是，点到x轴的距离
+    static constexpr float kx0 = 0.1275f; //kx的含义是，点到y轴的距离
+
+    static constexpr float ky1 = 0.18f;  //ky的含义是，点到x轴的距离
+    static constexpr float kx1 = 0.1275f; //kx的含义是，点到y轴的距离
+
+    static constexpr float ky2 = 0.215f;  //ky的含义是，点到x轴的距离
+    static constexpr float kx2 = 0.2675f; //kx的含义是，点到y轴的距离
+
+    static constexpr float ky3 = 0.215f;  //ky的含义是，点到x轴的距离
+    static constexpr float kx3 = 0.2675f; //kx的含义是，点到y轴的距离
 
     static constexpr float kWheelMaxSpeed = 2.5f;
 

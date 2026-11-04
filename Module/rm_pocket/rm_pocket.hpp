@@ -16,7 +16,6 @@
 #include <cstring>
 #include <cstdint>
 
-static constexpr uint8_t kMaxPaload = 62U;
 
 enum class RC_BTN_SW_State_t : uint8_t{
     RELEASED = 0,
@@ -38,7 +37,8 @@ enum class RC_3_Pos_SW_State_t : uint8_t {
 
 class RmPocket{
 
-    
+    static constexpr uint8_t kMaxPaload = 62U;
+
     struct CRSF_frame_t{
         uint8_t sync;
         uint8_t lenth;
