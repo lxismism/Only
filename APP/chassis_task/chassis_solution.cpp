@@ -24,6 +24,64 @@ using matrix_utils::Vector;
 
 
 static constexpr float kMaxDt = 0.02f;
+static constexpr float kHomeBecauseOfRest = 0.2f;
+
+
+void SteerChassis::run(const pub_chassis_cmd &cmd){
+
+    const float yaw = cur_world_pose_.face * DEG_2_RAD;
+    const float vx = cmd.linear_x_ * std::cos(yaw) + cmd.linear_y_ * std::sin(yaw);
+    const float vy = -cmd.linear_x_ * std::sin(yaw) + cmd.linear_y_ * std::cos(yaw);
+    const float omega = cmd.deg_omega_ * DEG_2_RAD; 
+
+    if(std::fabs(vx) < 0.0001f &&
+       std::fabs(vy) < 0.0001f &&
+       std::fabs(omega) < 0.0001f){
+
+        velocitys_[0].speed = 0.0f;
+        velocitys_[1].speed = 0.0f;
+        velocitys_[2].speed = 0.0f;
+        velocitys_[3].speed = 0.0f;
+
+        float dt = DWT_GetDeltaT(&DWT_rest_cnt_);
+
+        if(dt < kMaxDt){
+            rest_time_ += dt;
+        }
+        
+        if(rest_time_ > kHomeBecauseOfRest){
+            velocitys_[0].dir_deg =  std::atan2(kx0, -ky0) * RAD_2_DEG;
+            velocitys_[1].dir_deg = std::atan2(-kx1, -ky1) * RAD_2_DEG;
+            velocitys_[2].dir_deg =  std::atan2(-kx2, ky2) * RAD_2_DEG;
+            velocitys_[3].dir_deg =   std::atan2(kx3, ky3) * RAD_2_DEG;
+        }
+    } else {
+        rest_time_ = 0.0f;
+
+        velocitys_[0].speed = kDriveSign[0] * (std::sqrt((vx - omega * ky0) * (vx - omega * ky0) + 
+                                     (vy + omega * kx0) * (vy + omega * kx0)));
+        velocitys_[1].speed = kDriveSign[1] * (std::sqrt((vx - omega * ky1) * (vx - omega * ky1) + 
+                                     (vy - omega * kx1) * (vy - omega * kx1)));
+        velocitys_[2].speed = kDriveSign[2] * (std::sqrt((vx + omega * ky2) * (vx + omega * ky2) + 
+                                     (vy - omega * kx2) * (vy - omega * kx2)));
+        velocitys_[3].speed = kDriveSign[3] * (std::sqrt((vx + omega * ky3) * (vx + omega * ky3) + 
+                                     (vy + omega * kx3) * (vy + omega * kx3)));
+
+        desaturate();
+        
+        velocitys_[0].dir_deg = std::atan2(vy + omega * kx0 , vx - omega * ky0) * RAD_2_DEG;
+        velocitys_[1].dir_deg = std::atan2(vy - omega * kx1 , vx - omega * ky1) * RAD_2_DEG;
+        velocitys_[2].dir_deg = std::atan2(vy - omega * kx2 , vx + omega * ky2) * RAD_2_DEG;
+        velocitys_[3].dir_deg = std::atan2(vy + omega * kx3 , vx + omega * ky3) * RAD_2_DEG;
+        
+    }
+
+
+    for(uint8_t i = 0; i < kWheelNum; ++i){
+        steerwheels_[i].setVelocity(velocitys_[i]);
+    }
+
+}
 
 void SteerChassis::ForWardKine(const pub_imu_data &imu_data){
 
@@ -88,4 +146,4 @@ void SteerChassis::ForWardKine(const pub_imu_data &imu_data){
     cur_world_pose_.x += chassis_actual_twist_.linear_x_ * dt;
     cur_world_pose_.y += chassis_actual_twist_.linear_y_ * dt;
     
-}   //namespace
+}
