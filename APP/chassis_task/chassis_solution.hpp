@@ -319,7 +319,7 @@ public:
                 steerwheels_[2].IsReady() &&
                 steerwheels_[3].IsReady());
 
-        if(has_homing){
+        if(!has_homing){
             resetPose();
         }
 

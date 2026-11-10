@@ -11,7 +11,10 @@
 #pragma once
 #include <cmath>
 
+static constexpr float kDegToRad = 0.017453292519943295f;
+static constexpr float kRadToDeg = 57.29577951308232f;
 static constexpr float kPI = 3.1415926535897f;
+
 namespace math_utils {
 
 
@@ -38,5 +41,10 @@ inline float Map(float val, float in0, float in1, float out0, float out1){
     return out0 + offset_in * range_out / range_in;
 
 }
+
+float sinDeg(float deg);
+float cosDeg(float deg);
+void sin_cos_deg(float deg, float &sin_val, float &cos_val);
+
 
 }   //namespace math_utils
