@@ -401,58 +401,58 @@ void can1SendTask(void *argument){
     for(;;){        
 
         {
-            chassis_drivemotor1.update();
+            chassis_drivemotor1.computeOutput();
             CanBus::ClassicPack pack = {};  
             pack.id = (chassis_drivemotor1.getCommandID() << 8) |
                 (chassis_drivemotor1.getID() & 0xFFU);      
             pack.dlc = FDCAN_DLC_BYTES_4;
             pack.type = CanBus::Type::EXTENDED;
 
-            chassis_drivemotor1.buildTx(pack.data);
-
-            fdcan1_bus.addCanMsg(pack);
+            if(chassis_drivemotor1.buildTx(pack.data)){
+                fdcan1_bus.addCanMsg(pack);
+            }
         }
         // vTaskDelayUntil(&current, 1);
 
         {
-            chassis_drivemotor2.update();
+            chassis_drivemotor2.computeOutput();
             CanBus::ClassicPack pack = {};  
             pack.id = (chassis_drivemotor2.getCommandID() << 8) |
                 (chassis_drivemotor2.getID() & 0xFFU);      
             pack.dlc = FDCAN_DLC_BYTES_4;
             pack.type = CanBus::Type::EXTENDED;
 
-            chassis_drivemotor2.buildTx(pack.data);
-
-            fdcan1_bus.addCanMsg(pack);
+            if(chassis_drivemotor2.buildTx(pack.data)){
+                fdcan1_bus.addCanMsg(pack);
+            }
         }
         // vTaskDelayUntil(&current, 1);
 
         {
-            chassis_drivemotor3.update();
+            chassis_drivemotor3.computeOutput();
             CanBus::ClassicPack pack = {};  
             pack.id = (chassis_drivemotor3.getCommandID() << 8) |
                 (chassis_drivemotor3.getID() & 0xFFU);      
             pack.dlc = FDCAN_DLC_BYTES_4;
             pack.type = CanBus::Type::EXTENDED;
 
-            chassis_drivemotor3.buildTx(pack.data);
-
-            fdcan1_bus.addCanMsg(pack);
+            if(chassis_drivemotor3.buildTx(pack.data)){
+                fdcan1_bus.addCanMsg(pack);
+            }
         }
         // vTaskDelayUntil(&current, 1);
 
         {
-            chassis_drivemotor4.update();
+            chassis_drivemotor4.computeOutput();
             CanBus::ClassicPack pack = {};  
             pack.id = (chassis_drivemotor4.getCommandID() << 8) |
                 (chassis_drivemotor4.getID() & 0xFFU);      
             pack.dlc = FDCAN_DLC_BYTES_4;
             pack.type = CanBus::Type::EXTENDED;
 
-            chassis_drivemotor4.buildTx(pack.data);
-
-            fdcan1_bus.addCanMsg(pack);
+            if(chassis_drivemotor4.buildTx(pack.data)){
+                fdcan1_bus.addCanMsg(pack);
+            }
         }
 
         vTaskDelayUntil(&current, 1);
@@ -468,10 +468,10 @@ void can2SendTask(void *argument){
 
     for(;;){     
         
-        chassis_dirmotor1.update();
-        chassis_dirmotor2.update();
-        chassis_dirmotor3.update();
-        chassis_dirmotor4.update();
+        chassis_dirmotor1.computeOutput();
+        chassis_dirmotor2.computeOutput();
+        chassis_dirmotor3.computeOutput();
+        chassis_dirmotor4.computeOutput();
 
         uint8_t data[8] = {0};
         CanBus::ClassicPack pack = {};
@@ -507,8 +507,8 @@ void can3SendTask(void *argument){
     for(;;){
 
         {   
-            extend_motor.update();
-            lift_motor.update();
+            extend_motor.computeOutput();
+            lift_motor.computeOutput();
 
             uint8_t data[8]{};
             uint32_t motor_ids[4] = {0x201, 0x202, 0, 0};
